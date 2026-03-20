@@ -189,39 +189,39 @@ ALTER TABLE fichaje ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket ENABLE ROW LEVEL SECURITY;
 ALTER TABLE factura ENABLE ROW LEVEL SECURITY;
 
--- Helper: obtener autoescuela_id del usuario actual
-CREATE OR REPLACE FUNCTION auth.autoescuela_id()
+-- Helper: obtener autoescuela_id del usuario actual (en schema public)
+CREATE OR REPLACE FUNCTION public.get_autoescuela_id()
 RETURNS UUID AS $$
   SELECT autoescuela_id FROM public.usuario WHERE id = auth.uid()
 $$ LANGUAGE SQL SECURITY DEFINER STABLE;
 
 -- Policies: cada tabla solo ve datos de su autoescuela
 CREATE POLICY "Users see own autoescuela" ON autoescuela
-  FOR ALL USING (id = auth.autoescuela_id());
+  FOR ALL USING (id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela data" ON usuario
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela alumnos" ON alumno
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela profesores" ON profesor
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela vehiculos" ON vehiculo
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela clases" ON clase
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela examenes" ON expediente_examen
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela fichajes" ON fichaje
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela tickets" ON ticket
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
 
 CREATE POLICY "Users see own autoescuela facturas" ON factura
-  FOR ALL USING (autoescuela_id = auth.autoescuela_id());
+  FOR ALL USING (autoescuela_id = public.get_autoescuela_id());
