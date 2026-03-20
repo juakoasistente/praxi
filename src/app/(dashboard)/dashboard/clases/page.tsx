@@ -27,6 +27,7 @@ import { WeeklyCalendar } from "@/components/clases/weekly-calendar"
 import { ClasesListView } from "@/components/clases/clases-list-view"
 import { ClaseDetailDialog } from "@/components/clases/clase-detail-dialog"
 import { NuevaClaseDialog } from "@/components/clases/nueva-clase-dialog"
+import { RequireWrite } from "@/components/auth/require-write"
 
 function getMonday(date: Date): Date {
   const d = new Date(date)
@@ -175,10 +176,12 @@ export default function ClasesPage() {
           <h1 className="text-3xl font-bold">Clases</h1>
           <p className="text-muted-foreground">Calendario semanal de clases prácticas</p>
         </div>
-        <Button onClick={handleNewClaseButton}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva clase
-        </Button>
+        <RequireWrite entity="clases">
+          <Button onClick={handleNewClaseButton}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva clase
+          </Button>
+        </RequireWrite>
       </div>
 
       {/* Controls row */}

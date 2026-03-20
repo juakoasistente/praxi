@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -166,6 +167,9 @@ export default async function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* Charts & lists */}
+      <DashboardCharts />
     </div>
   )
 }

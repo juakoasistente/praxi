@@ -33,6 +33,7 @@ import {
   TIPOS_EXAMEN,
   RESULTADOS,
 } from "@/components/examenes/types"
+import { RequireWrite } from "@/components/auth/require-write"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import {
   getExamenes,
@@ -161,15 +162,17 @@ export default function ExamenesPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingExamen(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" data-icon="inline-start" />
-          Nuevo examen
-        </Button>
+        <RequireWrite entity="examenes">
+          <Button
+            onClick={() => {
+              setEditingExamen(null)
+              setFormOpen(true)
+            }}
+          >
+            <Plus className="size-4" data-icon="inline-start" />
+            Nuevo examen
+          </Button>
+        </RequireWrite>
       </div>
 
       {/* Stats cards */}

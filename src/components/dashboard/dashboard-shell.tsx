@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { useState } from 'react'
+import { RoleProvider } from '@/components/auth/role-provider'
+import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
 
 interface UserProfile {
   nombre: string
@@ -17,27 +19,18 @@ interface UserProfile {
   autoescuela_id: string
 }
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '/icons/dashboard.png' },
-  { href: '/dashboard/alumnos', label: 'Alumnos', icon: '/icons/alumnos.png' },
-  { href: '/dashboard/profesores', label: 'Profesores', icon: '/icons/profesores.png' },
-  { href: '/dashboard/clases', label: 'Clases', icon: '/icons/clases.png' },
-  { href: '/dashboard/vehiculos', label: 'Vehículos', icon: '/icons/vehiculos.png' },
-  { href: '/dashboard/facturacion', label: 'Facturación', icon: '/icons/facturacion.png' },
-  { href: '/dashboard/fichajes', label: 'Fichajes', icon: '/icons/fichajes.png' },
-  { href: '/dashboard/examenes', label: 'Exámenes', icon: '/icons/examenes.png' },
-]
-
 function NavLinks({
+  items,
   pathname,
   onClick,
 }: {
+  items: NavItem[]
   pathname: string
   onClick?: () => void
 }) {
   return (
     <nav className="flex flex-col gap-1">
-      {navItems.map((item) => {
+      {items.map((item) => {
         const isActive = item.href === '/dashboard'
           ? pathname === '/dashboard'
           : pathname.startsWith(item.href)
@@ -78,6 +71,9 @@ export function DashboardShell({
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  const userRole = (user?.rol as UserRole) ?? 'admin'
+  const navItems = getNavItems(userRole)
+
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -116,7 +112,7 @@ export function DashboardShell({
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/40">
             Menú
           </p>
-          <NavLinks pathname={pathname} />
+          <NavLinks items={navItems} pathname={pathname} />
         </div>
 
         {/* User footer */}
@@ -167,6 +163,7 @@ export function DashboardShell({
               </div>
               <div className="px-3">
                 <NavLinks
+                  items={navItems}
                   pathname={pathname}
                   onClick={() => setMobileOpen(false)}
                 />
@@ -178,7 +175,9 @@ export function DashboardShell({
 
         {/* Main content */}
         <main className="flex-1 overflow-y-auto bg-background">
-          <div className="p-6 lg:p-8">{children}</div>
+          <RoleProvider role={userRole}>
+            <div className="p-6 lg:p-8">{children}</div>
+          </RoleProvider>
         </main>
       </div>
     </div>

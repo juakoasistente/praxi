@@ -36,6 +36,7 @@ import { es } from "react-day-picker/locale"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getFichajes, createFichaje, getUserProfile } from "@/lib/services/fichajes"
+import { RequireWrite } from "@/components/auth/require-write"
 import { toast } from "sonner"
 
 function formatTime(isoStr: string) {
@@ -243,22 +244,24 @@ export default function FichajesPage() {
               })}
             </p>
           </div>
-          <Button
-            size="lg"
-            className={`h-16 min-w-48 text-lg font-semibold ${
-              siguienteTipo === "entrada"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-            onClick={handleFichar}
-          >
-            {siguienteTipo === "entrada" ? (
-              <LogIn className="mr-2 size-6" />
-            ) : (
-              <LogOut className="mr-2 size-6" />
-            )}
-            Fichar {siguienteTipo}
-          </Button>
+          <RequireWrite entity="fichajes">
+            <Button
+              size="lg"
+              className={`h-16 min-w-48 text-lg font-semibold ${
+                siguienteTipo === "entrada"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
+              onClick={handleFichar}
+            >
+              {siguienteTipo === "entrada" ? (
+                <LogIn className="mr-2 size-6" />
+              ) : (
+                <LogOut className="mr-2 size-6" />
+              )}
+              Fichar {siguienteTipo}
+            </Button>
+          </RequireWrite>
         </CardContent>
       </Card>
 

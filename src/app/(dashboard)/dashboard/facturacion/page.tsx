@@ -33,6 +33,7 @@ import {
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getFacturas, createFactura, updateFactura } from "@/lib/services/facturacion"
+import { RequireWrite } from "@/components/auth/require-write"
 import { toast } from "sonner"
 
 function formatDate(dateStr: string) {
@@ -203,15 +204,17 @@ export default function FacturacionPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingFactura(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" data-icon="inline-start" />
-          Nueva factura
-        </Button>
+        <RequireWrite entity="facturacion">
+          <Button
+            onClick={() => {
+              setEditingFactura(null)
+              setFormOpen(true)
+            }}
+          >
+            <Plus className="size-4" data-icon="inline-start" />
+            Nueva factura
+          </Button>
+        </RequireWrite>
       </div>
 
       {/* Stats cards */}

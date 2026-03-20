@@ -29,6 +29,7 @@ import type { Profesor } from "@/components/profesores/types"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getProfesores, createProfesor, updateProfesor } from "@/lib/services/profesores"
+import { RequireWrite } from "@/components/auth/require-write"
 import { toast } from "sonner"
 
 export default function ProfesoresPage() {
@@ -132,15 +133,17 @@ export default function ProfesoresPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingProfesor(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" data-icon="inline-start" />
-          Nuevo profesor
-        </Button>
+        <RequireWrite entity="profesores">
+          <Button
+            onClick={() => {
+              setEditingProfesor(null)
+              setFormOpen(true)
+            }}
+          >
+            <Plus className="size-4" data-icon="inline-start" />
+            Nuevo profesor
+          </Button>
+        </RequireWrite>
       </div>
 
       {/* Search */}
@@ -201,27 +204,29 @@ export default function ProfesoresPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(profesor)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleClick(profesor)}
-                        className={
-                          profesor.activo
-                            ? "text-destructive hover:text-destructive"
-                            : "text-green-700 hover:text-green-700"
-                        }
-                      >
-                        {profesor.activo ? "Desactivar" : "Activar"}
-                      </Button>
-                    </div>
+                    <RequireWrite entity="profesores">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(profesor)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleClick(profesor)}
+                          className={
+                            profesor.activo
+                              ? "text-destructive hover:text-destructive"
+                              : "text-green-700 hover:text-green-700"
+                          }
+                        >
+                          {profesor.activo ? "Desactivar" : "Activar"}
+                        </Button>
+                      </div>
+                    </RequireWrite>
                   </TableCell>
                 </TableRow>
               ))}

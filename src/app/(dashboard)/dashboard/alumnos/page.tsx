@@ -29,6 +29,7 @@ import { MOCK_ALUMNOS } from "@/components/alumnos/mock-data"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { getAlumnos, createAlumno, updateAlumno } from "@/lib/services/alumnos"
+import { RequireWrite } from "@/components/auth/require-write"
 import type { Alumno, PermisoType, EstadoAlumno } from "@/components/alumnos/types"
 import {
   ESTADO_LABELS,
@@ -152,15 +153,17 @@ export default function AlumnosPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingAlumno(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" data-icon="inline-start" />
-          Nuevo alumno
-        </Button>
+        <RequireWrite entity="alumnos">
+          <Button
+            onClick={() => {
+              setEditingAlumno(null)
+              setFormOpen(true)
+            }}
+          >
+            <Plus className="size-4" data-icon="inline-start" />
+            Nuevo alumno
+          </Button>
+        </RequireWrite>
       </div>
 
       {/* Filters */}

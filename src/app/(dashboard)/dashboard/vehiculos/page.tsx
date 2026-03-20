@@ -50,6 +50,7 @@ import {
   createCosteVehiculo,
   createIncidenciaVehiculo,
 } from "@/lib/services/vehiculos"
+import { RequireWrite } from "@/components/auth/require-write"
 import { toast } from "sonner"
 
 function formatCurrency(amount: number) {
@@ -231,24 +232,26 @@ export default function VehiculosPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCompararDialogOpen(true)}
-          >
-            <Scale className="size-4" data-icon="inline-start" />
-            Comparar
-          </Button>
-          <Button
-            onClick={() => {
-              setEditingVehiculo(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus className="size-4" data-icon="inline-start" />
-            Nuevo vehículo
-          </Button>
-        </div>
+        <RequireWrite entity="vehiculos">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCompararDialogOpen(true)}
+            >
+              <Scale className="size-4" data-icon="inline-start" />
+              Comparar
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingVehiculo(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus className="size-4" data-icon="inline-start" />
+              Nuevo vehículo
+            </Button>
+          </div>
+        </RequireWrite>
       </div>
 
       {/* Filters */}
