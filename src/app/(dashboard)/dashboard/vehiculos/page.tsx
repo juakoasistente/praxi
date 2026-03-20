@@ -39,6 +39,18 @@ import {
   TIPOS,
   ESTADOS,
 } from "@/components/vehiculos/types"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import {
+  getVehiculos,
+  createVehiculo,
+  updateVehiculo,
+  getAllCostes,
+  getAllIncidencias,
+  createCosteVehiculo,
+  createIncidenciaVehiculo,
+} from "@/lib/services/vehiculos"
+import { toast } from "sonner"
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString("es-ES", {
@@ -48,9 +60,20 @@ function formatCurrency(amount: number) {
 }
 
 export default function VehiculosPage() {
+  const { data: sbVehiculos, loading: loadingV, refetch: refetchV } = useSupabaseQuery(() => getVehiculos())
+  const { data: sbCostes, loading: loadingC, refetch: refetchC } = useSupabaseQuery(() => getAllCostes())
+  const { data: sbIncidencias, loading: loadingI, refetch: refetchI } = useSupabaseQuery(() => getAllIncidencias())
+
   const [vehiculos, setVehiculos] = React.useState<Vehiculo[]>(MOCK_VEHICULOS)
   const [costes, setCostes] = React.useState<CosteVehiculo[]>(MOCK_COSTES)
   const [incidencias, setIncidencias] = React.useState<IncidenciaVehiculo[]>(MOCK_INCIDENCIAS)
+
+  React.useEffect(() => { if (sbVehiculos) setVehiculos(sbVehiculos) }, [sbVehiculos])
+  React.useEffect(() => { if (sbCostes) setCostes(sbCostes) }, [sbCostes])
+  React.useEffect(() => { if (sbIncidencias) setIncidencias(sbIncidencias) }, [sbIncidencias])
+
+  const loading = loadingV || loadingC || loadingI
+
   const [search, setSearch] = React.useState("")
   const [filtroTipo, setFiltroTipo] = React.useState<string>("todos")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")
@@ -87,19 +110,32 @@ export default function VehiculosPage() {
     return precioAdquisicion + totalCostes
   }
 
-  function handleSave(data: Omit<Vehiculo, "id">) {
-    if (editingVehiculo) {
-      setVehiculos((prev) =>
-        prev.map((v) =>
-          v.id === editingVehiculo.id ? { ...v, ...data } : v
-        )
-      )
-    } else {
-      const newVehiculo: Vehiculo = {
-        ...data,
-        id: String(Date.now()),
+  async function handleSave(data: Omit<Vehiculo, "id">) {
+    try {
+      if (editingVehiculo) {
+        await updateVehiculo(editingVehiculo.id, data)
+        toast.success("Vehículo actualizado correctamente")
+      } else {
+        await createVehiculo(data)
+        toast.success("Vehículo creado correctamente")
       }
-      setVehiculos((prev) => [...prev, newVehiculo])
+      await refetchV()
+    } catch (error) {
+      toast.error("Error al guardar el vehículo")
+      // Fallback to local state
+      if (editingVehiculo) {
+        setVehiculos((prev) =>
+          prev.map((v) =>
+            v.id === editingVehiculo.id ? { ...v, ...data } : v
+          )
+        )
+      } else {
+        const newVehiculo: Vehiculo = {
+          ...data,
+          id: String(Date.now()),
+        }
+        setVehiculos((prev) => [...prev, newVehiculo])
+      }
     }
     setEditingVehiculo(null)
   }
@@ -114,35 +150,62 @@ export default function VehiculosPage() {
     setBajaDialogOpen(true)
   }
 
-  function confirmBaja() {
+  async function confirmBaja() {
     if (!bajaVehiculo) return
-    setVehiculos((prev) =>
-      prev.map((v) =>
-        v.id === bajaVehiculo.id ? { ...v, estado: "baja" as const } : v
+    try {
+      await updateVehiculo(bajaVehiculo.id, { estado: "baja" })
+      toast.success("Vehículo dado de baja correctamente")
+      await refetchV()
+    } catch (error) {
+      toast.error("Error al dar de baja el vehículo")
+      setVehiculos((prev) =>
+        prev.map((v) =>
+          v.id === bajaVehiculo.id ? { ...v, estado: "baja" as const } : v
+        )
       )
-    )
+    }
     setBajaVehiculo(null)
     setSheetOpen(false)
   }
 
-  function handleSaveCoste(data: Omit<CosteVehiculo, "id" | "vehiculo_id">) {
+  async function handleSaveCoste(data: Omit<CosteVehiculo, "id" | "vehiculo_id">) {
     if (!detailVehiculo) return
-    const newCoste: CosteVehiculo = {
-      ...data,
-      id: String(Date.now()),
-      vehiculo_id: detailVehiculo.id,
+    try {
+      await createCosteVehiculo({
+        ...data,
+        vehiculo_id: detailVehiculo.id,
+      })
+      toast.success("Coste registrado correctamente")
+      await refetchC()
+    } catch (error) {
+      toast.error("Error al registrar el coste")
+      const newCoste: CosteVehiculo = {
+        ...data,
+        id: String(Date.now()),
+        vehiculo_id: detailVehiculo.id,
+      }
+      setCostes((prev) => [...prev, newCoste])
     }
-    setCostes((prev) => [...prev, newCoste])
   }
 
-  function handleSaveIncidencia(data: Omit<IncidenciaVehiculo, "id" | "vehiculo_id">) {
+  async function handleSaveIncidencia(data: Omit<IncidenciaVehiculo, "id" | "vehiculo_id">) {
     if (!detailVehiculo) return
-    const newIncidencia: IncidenciaVehiculo = {
-      ...data,
-      id: String(Date.now()),
-      vehiculo_id: detailVehiculo.id,
+    try {
+      await createIncidenciaVehiculo({
+        ...data,
+        vehiculo_id: detailVehiculo.id,
+      })
+      toast.success("Incidencia registrada correctamente")
+      await refetchI()
+    } catch (error) {
+      toast.error("Error al registrar la incidencia")
+      const newIncidencia: IncidenciaVehiculo = {
+        ...data,
+        id: String(Date.now()),
+        vehiculo_id: detailVehiculo.id,
+      }
+      setIncidencias((prev) => [...prev, newIncidencia])
     }
-    setIncidencias((prev) => [...prev, newIncidencia])
   }
 
   function clearFilters() {
@@ -150,6 +213,8 @@ export default function VehiculosPage() {
     setFiltroTipo("todos")
     setFiltroEstado("todos")
   }
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">

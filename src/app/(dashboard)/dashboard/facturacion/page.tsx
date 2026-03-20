@@ -30,6 +30,10 @@ import {
   ESTADOS_FACTURA,
   METODO_PAGO_LABELS,
 } from "@/components/facturacion/types"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { getFacturas, createFactura, updateFactura } from "@/lib/services/facturacion"
+import { toast } from "sonner"
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-ES", {
@@ -47,7 +51,13 @@ function formatCurrency(amount: number) {
 }
 
 export default function FacturacionPage() {
+  const { data: sbFacturas, loading, refetch } = useSupabaseQuery(() => getFacturas())
   const [facturas, setFacturas] = React.useState<Factura[]>(MOCK_FACTURAS)
+
+  React.useEffect(() => {
+    if (sbFacturas) setFacturas(sbFacturas)
+  }, [sbFacturas])
+
   const [search, setSearch] = React.useState("")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")
 
@@ -93,19 +103,32 @@ export default function FacturacionPage() {
     return `FAC-2026-${String(maxNum + 1).padStart(3, "0")}`
   }, [facturas])
 
-  function handleSave(data: Omit<Factura, "id">) {
-    if (editingFactura) {
-      setFacturas((prev) =>
-        prev.map((f) =>
-          f.id === editingFactura.id ? { ...f, ...data } : f
-        )
-      )
-    } else {
-      const newFactura: Factura = {
-        ...data,
-        id: String(Date.now()),
+  async function handleSave(data: Omit<Factura, "id">) {
+    try {
+      if (editingFactura) {
+        await updateFactura(editingFactura.id, data)
+        toast.success("Factura actualizada correctamente")
+      } else {
+        await createFactura(data)
+        toast.success("Factura creada correctamente")
       }
-      setFacturas((prev) => [...prev, newFactura])
+      refetch()
+    } catch {
+      // Fallback to local state on error
+      if (editingFactura) {
+        setFacturas((prev) =>
+          prev.map((f) =>
+            f.id === editingFactura.id ? { ...f, ...data } : f
+          )
+        )
+      } else {
+        const newFactura: Factura = {
+          ...data,
+          id: String(Date.now()),
+        }
+        setFacturas((prev) => [...prev, newFactura])
+      }
+      toast.error("Error al guardar en servidor, cambios aplicados localmente")
     }
     setEditingFactura(null)
   }
@@ -115,28 +138,45 @@ export default function FacturacionPage() {
     setFormOpen(true)
   }
 
-  function handleMarkPaid(factura: Factura) {
-    setFacturas((prev) =>
-      prev.map((f) =>
-        f.id === factura.id
-          ? {
-              ...f,
-              estado: "pagada" as const,
-              fecha_pago: new Date().toISOString().split("T")[0],
-            }
-          : f
+  async function handleMarkPaid(factura: Factura) {
+    try {
+      await updateFactura(factura.id, {
+        estado: "pagada",
+        fecha_pago: new Date().toISOString().split("T")[0],
+      })
+      toast.success("Factura marcada como pagada")
+      refetch()
+    } catch {
+      setFacturas((prev) =>
+        prev.map((f) =>
+          f.id === factura.id
+            ? {
+                ...f,
+                estado: "pagada" as const,
+                fecha_pago: new Date().toISOString().split("T")[0],
+              }
+            : f
+        )
       )
-    )
+      toast.error("Error al actualizar en servidor, cambios aplicados localmente")
+    }
     setSheetOpen(false)
     setDetailFactura(null)
   }
 
-  function handleAnular(factura: Factura) {
-    setFacturas((prev) =>
-      prev.map((f) =>
-        f.id === factura.id ? { ...f, estado: "anulada" as const } : f
+  async function handleAnular(factura: Factura) {
+    try {
+      await updateFactura(factura.id, { estado: "anulada" })
+      toast.success("Factura anulada correctamente")
+      refetch()
+    } catch {
+      setFacturas((prev) =>
+        prev.map((f) =>
+          f.id === factura.id ? { ...f, estado: "anulada" as const } : f
+        )
       )
-    )
+      toast.error("Error al anular en servidor, cambios aplicados localmente")
+    }
     setSheetOpen(false)
     setDetailFactura(null)
   }
@@ -145,6 +185,8 @@ export default function FacturacionPage() {
     setSearch("")
     setFiltroEstado("todos")
   }
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">

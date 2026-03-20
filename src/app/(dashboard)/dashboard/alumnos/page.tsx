@@ -3,6 +3,7 @@
 import * as React from "react"
 import Image from "next/image"
 import { Search, Plus, X } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +26,9 @@ import { AlumnoFormDialog } from "@/components/alumnos/alumno-form-dialog"
 import { AlumnoDetailSheet } from "@/components/alumnos/alumno-detail-sheet"
 import { ConfirmarBajaDialog } from "@/components/alumnos/confirmar-baja-dialog"
 import { MOCK_ALUMNOS } from "@/components/alumnos/mock-data"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { getAlumnos, createAlumno, updateAlumno } from "@/lib/services/alumnos"
 import type { Alumno, PermisoType, EstadoAlumno } from "@/components/alumnos/types"
 import {
   ESTADO_LABELS,
@@ -42,7 +46,14 @@ function formatDate(dateStr: string) {
 }
 
 export default function AlumnosPage() {
+  const { data: supabaseAlumnos, loading, error, refetch } = useSupabaseQuery(() => getAlumnos())
   const [alumnos, setAlumnos] = React.useState<Alumno[]>(MOCK_ALUMNOS)
+
+  // Sync supabase data when available
+  React.useEffect(() => {
+    if (supabaseAlumnos) setAlumnos(supabaseAlumnos)
+  }, [supabaseAlumnos])
+
   const [search, setSearch] = React.useState("")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")
   const [filtroPermiso, setFiltroPermiso] = React.useState<string>("todos")
@@ -69,19 +80,24 @@ export default function AlumnosPage() {
 
   const hasActiveFilters = search || filtroEstado !== "todos" || filtroPermiso !== "todos"
 
-  function handleSave(data: Omit<Alumno, "id">) {
-    if (editingAlumno) {
-      setAlumnos((prev) =>
-        prev.map((a) =>
-          a.id === editingAlumno.id ? { ...a, ...data } : a
-        )
-      )
-    } else {
-      const newAlumno: Alumno = {
-        ...data,
-        id: String(Date.now()),
+  async function handleSave(data: Omit<Alumno, "id">) {
+    try {
+      if (editingAlumno) {
+        await updateAlumno(editingAlumno.id, data)
+        toast.success("Alumno actualizado correctamente")
+      } else {
+        await createAlumno(data)
+        toast.success("Alumno creado correctamente")
       }
-      setAlumnos((prev) => [...prev, newAlumno])
+      refetch()
+    } catch {
+      toast.error(editingAlumno ? "Error al actualizar el alumno" : "Error al crear el alumno")
+      // Fallback: update local state
+      if (editingAlumno) {
+        setAlumnos((prev) => prev.map((a) => a.id === editingAlumno.id ? { ...a, ...data } : a))
+      } else {
+        setAlumnos((prev) => [...prev, { ...data, id: String(Date.now()) }])
+      }
     }
     setEditingAlumno(null)
   }
@@ -96,13 +112,16 @@ export default function AlumnosPage() {
     setBajaDialogOpen(true)
   }
 
-  function confirmBaja() {
+  async function confirmBaja() {
     if (!bajaAlumno) return
-    setAlumnos((prev) =>
-      prev.map((a) =>
-        a.id === bajaAlumno.id ? { ...a, estado: "baja" as const } : a
-      )
-    )
+    try {
+      await updateAlumno(bajaAlumno.id, { estado: "baja" })
+      toast.success("Alumno dado de baja correctamente")
+      refetch()
+    } catch {
+      toast.error("Error al dar de baja al alumno")
+      setAlumnos((prev) => prev.map((a) => a.id === bajaAlumno.id ? { ...a, estado: "baja" as const } : a))
+    }
     setBajaAlumno(null)
     setSheetOpen(false)
   }
@@ -112,6 +131,8 @@ export default function AlumnosPage() {
     setFiltroEstado("todos")
     setFiltroPermiso("todos")
   }
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">

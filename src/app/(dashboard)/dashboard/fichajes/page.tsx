@@ -33,6 +33,10 @@ import { Calendar } from "@/components/ui/calendar"
 import { MOCK_FICHAJES, EMPLEADOS } from "@/components/fichajes/mock-data"
 import type { Fichaje } from "@/components/fichajes/types"
 import { es } from "react-day-picker/locale"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { getFichajes, createFichaje, getUserProfile } from "@/lib/services/fichajes"
+import { toast } from "sonner"
 
 function formatTime(isoStr: string) {
   return new Date(isoStr).toLocaleTimeString("es-ES", {
@@ -60,11 +64,19 @@ function isSameDay(d1: Date, d2: Date) {
 }
 
 export default function FichajesPage() {
+  const { data: sbFichajes, loading: loadingFichajes, refetch } = useSupabaseQuery(() => getFichajes())
+  const { data: userProfile } = useSupabaseQuery(() => getUserProfile())
+
   const [fichajes, setFichajes] = React.useState<Fichaje[]>(MOCK_FICHAJES)
+
+  React.useEffect(() => { if (sbFichajes) setFichajes(sbFichajes) }, [sbFichajes])
+
   const [fechaFiltro, setFechaFiltro] = React.useState<Date>(new Date())
   const [empleadoFiltro, setEmpleadoFiltro] = React.useState<string>("todos")
   const [calendarOpen, setCalendarOpen] = React.useState(false)
   const [horaActual, setHoraActual] = React.useState(new Date())
+
+  if (loadingFichajes) return <LoadingSkeleton />
 
   // Reloj en tiempo real
   React.useEffect(() => {
@@ -90,19 +102,22 @@ export default function FichajesPage() {
   }, [calendarOpen])
 
   // Determinar si el último fichaje del "usuario actual" (Miguel Santos - admin) es entrada o salida
+  const currentUserName = userProfile?.nombre ?? "Miguel"
+  const currentUserApellidos = userProfile?.apellidos ?? "Santos Rivas"
+
   const ultimoFichajePropio = React.useMemo(() => {
     const propios = fichajes
       .filter(
         (f) =>
-          f.usuario_nombre === "Miguel" &&
-          f.usuario_apellidos === "Santos Rivas"
+          f.usuario_nombre === currentUserName &&
+          f.usuario_apellidos === currentUserApellidos
       )
       .sort(
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       )
     return propios[0] ?? null
-  }, [fichajes])
+  }, [fichajes, currentUserName, currentUserApellidos])
 
   const siguienteTipo =
     !ultimoFichajePropio || ultimoFichajePropio.tipo === "salida"
@@ -148,17 +163,33 @@ export default function FichajesPage() {
     }
   }, [fichajesDelDia])
 
-  function handleFichar() {
-    const nuevoFichaje: Fichaje = {
-      id: `f${Date.now()}`,
-      usuario_nombre: "Miguel",
-      usuario_apellidos: "Santos Rivas",
-      usuario_rol: "admin",
-      tipo: siguienteTipo,
-      timestamp: new Date().toISOString(),
-      metodo: "app",
+  async function handleFichar() {
+    try {
+      if (userProfile) {
+        await createFichaje({
+          usuario_id: userProfile.id,
+          tipo: siguienteTipo,
+          metodo: "app",
+        })
+        toast.success(`Fichaje de ${siguienteTipo} registrado`)
+        refetch()
+      } else {
+        // Fallback to local state
+        const nuevoFichaje: Fichaje = {
+          id: `f${Date.now()}`,
+          usuario_nombre: "Miguel",
+          usuario_apellidos: "Santos Rivas",
+          usuario_rol: "admin",
+          tipo: siguienteTipo,
+          timestamp: new Date().toISOString(),
+          metodo: "app",
+        }
+        setFichajes((prev) => [nuevoFichaje, ...prev])
+        toast.success(`Fichaje de ${siguienteTipo} registrado`)
+      }
+    } catch {
+      toast.error("Error al registrar el fichaje")
     }
-    setFichajes((prev) => [nuevoFichaje, ...prev])
   }
 
   const hasActiveFilters =

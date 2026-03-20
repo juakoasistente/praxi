@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { CalendarDays, ChevronLeft, ChevronRight, List, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,11 @@ import {
   type Clase,
   type EstadoClase,
 } from "@/components/clases/mock-data"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { getClases, createClase as createClaseService, updateClase as updateClaseService } from "@/lib/services/clases"
+import { getProfesores } from "@/lib/services/profesores"
+import { toast } from "sonner"
 import { WeeklyCalendar } from "@/components/clases/weekly-calendar"
 import { ClasesListView } from "@/components/clases/clases-list-view"
 import { ClaseDetailDialog } from "@/components/clases/clase-detail-dialog"
@@ -62,7 +67,16 @@ function formatWeekRange(monday: Date): string {
 }
 
 export default function ClasesPage() {
+  const { data: sbClases, loading: loadingClases, refetch: refetchClases } = useSupabaseQuery(() => getClases())
+  const { data: sbProfesores, loading: loadingProfesores } = useSupabaseQuery(() => getProfesores())
+
   const [clases, setClases] = useState<Clase[]>(MOCK_CLASES)
+  const profesores = sbProfesores?.map(p => ({ id: p.id, nombre: p.nombre, apellidos: p.apellidos })) ?? PROFESORES_CLASES
+
+  useEffect(() => { if (sbClases) setClases(sbClases) }, [sbClases])
+
+  const loading = loadingClases || loadingProfesores
+
   const [profesorId, setProfesorId] = useState("todos")
   const [weekStart, setWeekStart] = useState(() => getMonday(new Date()))
   const [view, setView] = useState<"calendar" | "list">("calendar")
@@ -103,9 +117,9 @@ export default function ClasesPage() {
     const noShow = weekClases.filter((c) => c.estado === "no_show").length
     const horasOcupadas = weekClases.filter((c) => c.estado !== "cancelada").length
     // 5 days * 12 hours = 60 hours available per professor
-    const horasDisponibles = profesorId === "todos" ? 60 * PROFESORES_CLASES.length : 60
+    const horasDisponibles = profesorId === "todos" ? 60 * profesores.length : 60
     return { total, completadas, programadas, canceladas, noShow, horasOcupadas, horasDisponibles }
-  }, [weekClases, profesorId])
+  }, [weekClases, profesorId, profesores])
 
   const handleClaseClick = useCallback((clase: Clase) => {
     setSelectedClase(clase)
@@ -121,13 +135,27 @@ export default function ClasesPage() {
     []
   )
 
-  const handleChangeEstado = useCallback((id: string, estado: EstadoClase) => {
+  const handleChangeEstado = useCallback(async (id: string, estado: EstadoClase) => {
     setClases((prev) => prev.map((c) => (c.id === id ? { ...c, estado } : c)))
-  }, [])
+    try {
+      await updateClaseService(id, { estado })
+      toast.success("Estado actualizado")
+      refetchClases()
+    } catch {
+      toast.error("Error al actualizar el estado")
+    }
+  }, [refetchClases])
 
-  const handleAddClase = useCallback((clase: Clase) => {
+  const handleAddClase = useCallback(async (clase: Clase) => {
     setClases((prev) => [...prev, clase])
-  }, [])
+    try {
+      await createClaseService(clase)
+      toast.success("Clase creada")
+      refetchClases()
+    } catch {
+      toast.error("Error al crear la clase")
+    }
+  }, [refetchClases])
 
   const handleNewClaseButton = useCallback(() => {
     setPrefillFecha(undefined)
@@ -136,6 +164,8 @@ export default function ClasesPage() {
   }, [])
 
   const goToday = useCallback(() => setWeekStart(getMonday(new Date())), [])
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">
@@ -160,7 +190,7 @@ export default function ClasesPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los profesores</SelectItem>
-            {PROFESORES_CLASES.map((p) => (
+            {profesores.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.nombre} {p.apellidos}
               </SelectItem>

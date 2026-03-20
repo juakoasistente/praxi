@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Search, Plus, X, ClipboardCheck, CheckCircle, XCircle, Clock } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { ExamenFormDialog } from "@/components/examenes/examen-form-dialog"
 import { ExamenDetailDialog } from "@/components/examenes/examen-detail-dialog"
 import { MOCK_EXAMENES } from "@/components/examenes/mock-data"
@@ -31,6 +33,13 @@ import {
   TIPOS_EXAMEN,
   RESULTADOS,
 } from "@/components/examenes/types"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import {
+  getExamenes,
+  createExamen,
+  updateExamen,
+  deleteExamen as deleteExamenService,
+} from "@/lib/services/examenes"
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-ES", {
@@ -41,7 +50,13 @@ function formatDate(dateStr: string) {
 }
 
 export default function ExamenesPage() {
+  const { data: sbExamenes, loading, refetch } = useSupabaseQuery(() => getExamenes())
   const [examenes, setExamenes] = React.useState<Examen[]>(MOCK_EXAMENES)
+
+  React.useEffect(() => {
+    if (sbExamenes) setExamenes(sbExamenes)
+  }, [sbExamenes])
+
   const [search, setSearch] = React.useState("")
   const [filtroTipo, setFiltroTipo] = React.useState<string>("todos")
   const [filtroResultado, setFiltroResultado] = React.useState<string>("todos")
@@ -73,19 +88,33 @@ export default function ExamenesPage() {
   const pctAprobados = totalPresentaciones > 0 ? Math.round((aprobados / totalPresentaciones) * 100) : 0
   const pctSuspendidos = totalPresentaciones > 0 ? Math.round((suspendidos / totalPresentaciones) * 100) : 0
 
-  function handleSave(data: Omit<Examen, "id">) {
-    if (editingExamen) {
-      setExamenes((prev) =>
-        prev.map((e) =>
-          e.id === editingExamen.id ? { ...e, ...data } : e
-        )
-      )
-    } else {
-      const newExamen: Examen = {
-        ...data,
-        id: String(Date.now()),
+  async function handleSave(data: Omit<Examen, "id">) {
+    try {
+      if (editingExamen) {
+        await updateExamen(editingExamen.id, data)
+        toast.success("Examen actualizado correctamente")
+      } else {
+        const { alumno_nombre: _alumno_nombre, ...rest } = data as Omit<Examen, "id">
+        await createExamen(rest)
+        toast.success("Examen creado correctamente")
       }
-      setExamenes((prev) => [...prev, newExamen])
+      await refetch()
+    } catch {
+      // Fallback to local state on error
+      if (editingExamen) {
+        setExamenes((prev) =>
+          prev.map((e) =>
+            e.id === editingExamen.id ? { ...e, ...data } : e
+          )
+        )
+      } else {
+        const newExamen: Examen = {
+          ...data,
+          id: String(Date.now()),
+        }
+        setExamenes((prev) => [...prev, newExamen])
+      }
+      toast.error("Error al guardar en servidor, cambios aplicados localmente")
     }
     setEditingExamen(null)
   }
@@ -95,8 +124,16 @@ export default function ExamenesPage() {
     setFormOpen(true)
   }
 
-  function handleDelete(examen: Examen) {
-    setExamenes((prev) => prev.filter((e) => e.id !== examen.id))
+  async function handleDelete(examen: Examen) {
+    try {
+      await deleteExamenService(examen.id)
+      toast.success("Examen eliminado correctamente")
+      await refetch()
+    } catch {
+      // Fallback to local state on error
+      setExamenes((prev) => prev.filter((e) => e.id !== examen.id))
+      toast.error("Error al eliminar en servidor, cambios aplicados localmente")
+    }
     setDetailOpen(false)
     setDetailExamen(null)
   }
@@ -106,6 +143,8 @@ export default function ExamenesPage() {
     setFiltroTipo("todos")
     setFiltroResultado("todos")
   }
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">

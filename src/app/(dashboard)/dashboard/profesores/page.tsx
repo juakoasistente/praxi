@@ -26,14 +26,23 @@ import {
 import { ProfesorFormDialog } from "@/components/profesores/profesor-form-dialog"
 import { MOCK_PROFESORES } from "@/components/profesores/mock-data"
 import type { Profesor } from "@/components/profesores/types"
+import { useSupabaseQuery } from "@/hooks/use-supabase-query"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { getProfesores, createProfesor, updateProfesor } from "@/lib/services/profesores"
+import { toast } from "sonner"
 
 export default function ProfesoresPage() {
+  const { data: supabaseProfesores, loading, error, refetch } = useSupabaseQuery(() => getProfesores())
   const [profesores, setProfesores] = React.useState<Profesor[]>(MOCK_PROFESORES)
   const [search, setSearch] = React.useState("")
   const [formOpen, setFormOpen] = React.useState(false)
   const [editingProfesor, setEditingProfesor] = React.useState<Profesor | null>(null)
   const [toggleProfesor, setToggleProfesor] = React.useState<Profesor | null>(null)
   const [toggleDialogOpen, setToggleDialogOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    if (supabaseProfesores) setProfesores(supabaseProfesores)
+  }, [supabaseProfesores])
 
   const filtered = React.useMemo(() => {
     if (!search) return profesores
@@ -42,19 +51,32 @@ export default function ProfesoresPage() {
     )
   }, [profesores, search])
 
-  function handleSave(data: Omit<Profesor, "id">) {
-    if (editingProfesor) {
-      setProfesores((prev) =>
-        prev.map((p) =>
-          p.id === editingProfesor.id ? { ...p, ...data } : p
-        )
-      )
-    } else {
-      const newProfesor: Profesor = {
-        ...data,
-        id: String(Date.now()),
+  async function handleSave(data: Omit<Profesor, "id">) {
+    try {
+      if (editingProfesor) {
+        await updateProfesor(editingProfesor.id, data)
+        toast.success("Profesor actualizado correctamente")
+      } else {
+        await createProfesor(data)
+        toast.success("Profesor creado correctamente")
       }
-      setProfesores((prev) => [...prev, newProfesor])
+      refetch()
+    } catch {
+      // Fallback to local state on error
+      if (editingProfesor) {
+        setProfesores((prev) =>
+          prev.map((p) =>
+            p.id === editingProfesor.id ? { ...p, ...data } : p
+          )
+        )
+      } else {
+        const newProfesor: Profesor = {
+          ...data,
+          id: String(Date.now()),
+        }
+        setProfesores((prev) => [...prev, newProfesor])
+      }
+      toast.error("Error al guardar. Se actualizó localmente.")
     }
     setEditingProfesor(null)
   }
@@ -69,16 +91,28 @@ export default function ProfesoresPage() {
     setToggleDialogOpen(true)
   }
 
-  function confirmToggle() {
+  async function confirmToggle() {
     if (!toggleProfesor) return
-    setProfesores((prev) =>
-      prev.map((p) =>
-        p.id === toggleProfesor.id ? { ...p, activo: !p.activo } : p
+    try {
+      await updateProfesor(toggleProfesor.id, { activo: !toggleProfesor.activo })
+      toast.success(
+        toggleProfesor.activo ? "Profesor desactivado" : "Profesor activado"
       )
-    )
+      refetch()
+    } catch {
+      // Fallback to local state on error
+      setProfesores((prev) =>
+        prev.map((p) =>
+          p.id === toggleProfesor.id ? { ...p, activo: !p.activo } : p
+        )
+      )
+      toast.error("Error al actualizar. Se actualizó localmente.")
+    }
     setToggleProfesor(null)
     setToggleDialogOpen(false)
   }
+
+  if (loading) return <LoadingSkeleton />
 
   return (
     <div className="space-y-6">
