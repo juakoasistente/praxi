@@ -75,6 +75,15 @@ export const CONCEPTO_LABELS: Record<ConceptoFactura, string> = {
   otro: "Otro",
 }
 
+export interface PagoFactura {
+  id: string
+  factura_id: string
+  importe: number
+  fecha: string
+  metodo_pago: MetodoPago
+  notas: string | null
+}
+
 export const ESTADOS_FACTURA: EstadoFactura[] = [
   "pendiente",
   "pagada",

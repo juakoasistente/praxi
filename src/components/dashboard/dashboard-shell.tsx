@@ -12,6 +12,11 @@ import { useState } from 'react'
 import { RoleProvider } from '@/components/auth/role-provider'
 import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { BarChart3 } from 'lucide-react'
+
+const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  BarChart3,
+}
 
 interface UserProfile {
   nombre: string
@@ -46,13 +51,20 @@ function NavLinks({
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
             }`}
           >
-            <Image
-              src={item.icon}
-              alt={item.label}
-              width={20}
-              height={20}
-              className="shrink-0"
-            />
+            {item.icon.startsWith('/') ? (
+              <Image
+                src={item.icon}
+                alt={item.label}
+                width={20}
+                height={20}
+                className="shrink-0"
+              />
+            ) : (
+              (() => {
+                const Icon = LUCIDE_ICONS[item.icon]
+                return Icon ? <Icon className="size-5 shrink-0" /> : null
+              })()
+            )}
             {item.label}
           </Link>
         )

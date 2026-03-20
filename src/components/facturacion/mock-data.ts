@@ -1,4 +1,4 @@
-import type { Factura } from "./types"
+import type { Factura, PagoFactura } from "./types"
 
 export const MOCK_FACTURAS: Factura[] = [
   {
@@ -341,4 +341,21 @@ export const MOCK_FACTURAS: Factura[] = [
     fecha_pago: null,
     notas: null,
   },
+]
+
+export const MOCK_PAGOS: PagoFactura[] = [
+  // Factura 1 (pagada - 700€)
+  { id: "p1", factura_id: "1", importe: 700, fecha: "2025-09-12", metodo_pago: "tarjeta", notas: null },
+  // Factura 2 (pagada - 280€)
+  { id: "p2", factura_id: "2", importe: 280, fecha: "2025-06-22", metodo_pago: "transferencia", notas: null },
+  // Factura 4 (pagada - 200€)
+  { id: "p3", factura_id: "4", importe: 200, fecha: "2026-01-15", metodo_pago: "efectivo", notas: "Pagado en efectivo al matricularse." },
+  // Factura 5 (pagada - 871.50€)
+  { id: "p4", factura_id: "5", importe: 500, fecha: "2025-02-05", metodo_pago: "domiciliacion", notas: "Primer pago" },
+  { id: "p5", factura_id: "5", importe: 371.50, fecha: "2025-02-15", metodo_pago: "domiciliacion", notas: "Segundo pago" },
+  // Factura 6 (parcial - 400€ de 700€)
+  { id: "p6", factura_id: "6", importe: 250, fecha: "2025-04-15", metodo_pago: "tarjeta", notas: "Primer pago parcial" },
+  { id: "p7", factura_id: "6", importe: 150, fecha: "2025-05-01", metodo_pago: "tarjeta", notas: "Segundo pago parcial" },
+  // Factura 10 (parcial - 500€ de 850€)
+  { id: "p8", factura_id: "10", importe: 500, fecha: "2025-09-01", metodo_pago: "transferencia", notas: "Pago inicial" },
 ]

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, Plus, X, ClipboardCheck, CheckCircle, XCircle, Clock } from "lucide-react"
+import { Search, Plus, X, ClipboardCheck, CheckCircle, XCircle, Clock, Calendar } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,9 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { ExamenFormDialog } from "@/components/examenes/examen-form-dialog"
 import { ExamenDetailDialog } from "@/components/examenes/examen-detail-dialog"
+import { ExamenCalendar } from "@/components/examenes/examen-calendar"
 import { MOCK_EXAMENES } from "@/components/examenes/mock-data"
 import type { Examen } from "@/components/examenes/types"
 import {
@@ -145,6 +147,11 @@ export default function ExamenesPage() {
     setFiltroResultado("todos")
   }
 
+  function handleExamClick(examen: Examen) {
+    setDetailExamen(examen)
+    setDetailOpen(true)
+  }
+
   if (loading) return <LoadingSkeleton />
 
   return (
@@ -217,124 +224,142 @@ export default function ExamenesPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre de alumno..."
-            className="pl-8"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <Select value={filtroTipo} onValueChange={(val) => setFiltroTipo(val ?? "todos")}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los tipos</SelectItem>
-            {TIPOS_EXAMEN.map((t) => (
-              <SelectItem key={t} value={t}>
-                {TIPO_LABELS[t]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filtroResultado} onValueChange={(val) => setFiltroResultado(val ?? "todos")}>
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Resultado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los resultados</SelectItem>
-            {RESULTADOS.map((r) => (
-              <SelectItem key={r} value={r}>
-                {RESULTADO_LABELS[r]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8">
-            <X className="size-4" />
-            Limpiar
-          </Button>
-        )}
-      </div>
+      {/* Tabs: Tabla | Calendario */}
+      <Tabs defaultValue="tabla">
+        <TabsList>
+          <TabsTrigger value="tabla">Tabla</TabsTrigger>
+          <TabsTrigger value="calendario">
+            <Calendar className="size-4" />
+            Calendario
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Table */}
-      {filtered.length > 0 ? (
-        <div className="rounded-lg border overflow-x-auto">
-          <Table className="min-w-[600px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Alumno</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead className="hidden sm:table-cell">Convocatoria</TableHead>
-                <TableHead className="hidden md:table-cell">Intento</TableHead>
-                <TableHead>Resultado</TableHead>
-                <TableHead className="hidden md:table-cell">Centro</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((examen) => (
-                <TableRow
-                  key={examen.id}
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setDetailExamen(examen)
-                    setDetailOpen(true)
-                  }}
-                >
-                  <TableCell className="font-medium">
-                    {examen.alumno_nombre}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{TIPO_LABELS[examen.tipo]}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(examen.fecha)}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">
-                    {examen.convocatoria ?? "—"}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-center">
-                    {examen.intento}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`border-0 ${RESULTADO_COLORS[examen.resultado]}`}
-                    >
-                      {RESULTADO_LABELS[examen.resultado]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">
-                    {examen.centro_examen ?? "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="rounded-full bg-muted p-4 mb-4">
-            <Search className="size-8 text-muted-foreground" />
+        <TabsContent value="tabla">
+          <div className="space-y-4 pt-2">
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre de alumno..."
+                  className="pl-8"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <Select value={filtroTipo} onValueChange={(val) => setFiltroTipo(val ?? "todos")}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos los tipos</SelectItem>
+                  {TIPOS_EXAMEN.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {TIPO_LABELS[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filtroResultado} onValueChange={(val) => setFiltroResultado(val ?? "todos")}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder="Resultado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos los resultados</SelectItem>
+                  {RESULTADOS.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {RESULTADO_LABELS[r]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8">
+                  <X className="size-4" />
+                  Limpiar
+                </Button>
+              )}
+            </div>
+
+            {/* Table */}
+            {filtered.length > 0 ? (
+              <div className="rounded-lg border overflow-x-auto">
+                <Table className="min-w-[600px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Alumno</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="hidden sm:table-cell">Convocatoria</TableHead>
+                      <TableHead className="hidden md:table-cell">Intento</TableHead>
+                      <TableHead>Resultado</TableHead>
+                      <TableHead className="hidden md:table-cell">Centro</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((examen) => (
+                      <TableRow
+                        key={examen.id}
+                        className="cursor-pointer"
+                        onClick={() => handleExamClick(examen)}
+                      >
+                        <TableCell className="font-medium">
+                          {examen.alumno_nombre}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{TIPO_LABELS[examen.tipo]}</Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatDate(examen.fecha)}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">
+                          {examen.convocatoria ?? "—"}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-center">
+                          {examen.intento}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`border-0 ${RESULTADO_COLORS[examen.resultado]}`}
+                          >
+                            {RESULTADO_LABELS[examen.resultado]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-muted-foreground">
+                          {examen.centro_examen ?? "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="rounded-full bg-muted p-4 mb-4">
+                  <Search className="size-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold">No se encontraron exámenes</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                  {hasActiveFilters
+                    ? "Prueba a cambiar los filtros de búsqueda o limpiar los filtros."
+                    : "Aún no hay exámenes registrados. Haz clic en \"Nuevo examen\" para empezar."}
+                </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
-          <h3 className="text-lg font-semibold">No se encontraron exámenes</h3>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            {hasActiveFilters
-              ? "Prueba a cambiar los filtros de búsqueda o limpiar los filtros."
-              : "Aún no hay exámenes registrados. Haz clic en \"Nuevo examen\" para empezar."}
-          </p>
-          {hasActiveFilters && (
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>
-              Limpiar filtros
-            </Button>
-          )}
-        </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="calendario">
+          <div className="pt-2">
+            <ExamenCalendar exams={examenes} onExamClick={handleExamClick} />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Dialogs */}
       <ExamenFormDialog

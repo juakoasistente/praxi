@@ -15,6 +15,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/facturacion", label: "Facturación", icon: "/icons/facturacion.png" },
   { href: "/dashboard/fichajes", label: "Fichajes", icon: "/icons/fichajes.png" },
   { href: "/dashboard/examenes", label: "Exámenes", icon: "/icons/examenes.png" },
+  { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3" },
 ]
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
@@ -27,6 +28,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/facturacion",
     "/dashboard/examenes",
     "/dashboard/fichajes",
+    "/dashboard/estadisticas",
   ],
   profesor: [
     "/dashboard",

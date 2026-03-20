@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/select"
 import { FacturaFormDialog } from "@/components/facturacion/factura-form-dialog"
 import { FacturaDetailSheet } from "@/components/facturacion/factura-detail-sheet"
-import { MOCK_FACTURAS } from "@/components/facturacion/mock-data"
-import type { Factura } from "@/components/facturacion/types"
+import { MOCK_FACTURAS, MOCK_PAGOS } from "@/components/facturacion/mock-data"
+import type { Factura, PagoFactura } from "@/components/facturacion/types"
 import {
   ESTADO_FACTURA_LABELS,
   ESTADO_FACTURA_COLORS,
@@ -54,6 +54,7 @@ function formatCurrency(amount: number) {
 export default function FacturacionPage() {
   const { data: sbFacturas, loading, refetch } = useSupabaseQuery(() => getFacturas())
   const [facturas, setFacturas] = React.useState<Factura[]>(MOCK_FACTURAS)
+  const [pagos, setPagos] = React.useState<PagoFactura[]>(MOCK_PAGOS)
 
   React.useEffect(() => {
     if (sbFacturas) setFacturas(sbFacturas)
@@ -81,16 +82,26 @@ export default function FacturacionPage() {
 
   const hasActiveFilters = search || filtroEstado !== "todos"
 
-  // Stats
+  // Stats - calculate "Cobrado" from actual payments
   const totalFacturado = facturas
     .filter((f) => f.estado !== "anulada")
     .reduce((sum, f) => sum + f.total, 0)
-  const cobrado = facturas
-    .filter((f) => f.estado === "pagada")
-    .reduce((sum, f) => sum + f.total, 0)
+  const cobrado = React.useMemo(() => {
+    return pagos
+      .filter((p) => {
+        const factura = facturas.find((f) => f.id === p.factura_id)
+        return factura && factura.estado !== "anulada"
+      })
+      .reduce((sum, p) => sum + p.importe, 0)
+  }, [pagos, facturas])
   const pendienteCobro = facturas
     .filter((f) => f.estado === "pendiente" || f.estado === "parcial")
-    .reduce((sum, f) => sum + f.total, 0)
+    .reduce((sum, f) => {
+      const pagado = pagos
+        .filter((p) => p.factura_id === f.id)
+        .reduce((s, p) => s + p.importe, 0)
+      return sum + (f.total - pagado)
+    }, 0)
   const vencido = facturas
     .filter((f) => f.estado === "vencida")
     .reduce((sum, f) => sum + f.total, 0)
@@ -140,6 +151,24 @@ export default function FacturacionPage() {
   }
 
   async function handleMarkPaid(factura: Factura) {
+    const totalPagado = pagos
+      .filter((p) => p.factura_id === factura.id)
+      .reduce((sum, p) => sum + p.importe, 0)
+    const remaining = factura.total - totalPagado
+
+    // Record the remaining payment
+    if (remaining > 0) {
+      const newPago: PagoFactura = {
+        id: `p-${Date.now()}`,
+        factura_id: factura.id,
+        importe: remaining,
+        fecha: new Date().toISOString().split("T")[0],
+        metodo_pago: factura.metodo_pago ?? "efectivo",
+        notas: "Pago completo restante",
+      }
+      setPagos((prev) => [...prev, newPago])
+    }
+
     try {
       await updateFactura(factura.id, {
         estado: "pagada",
@@ -180,6 +209,42 @@ export default function FacturacionPage() {
     }
     setSheetOpen(false)
     setDetailFactura(null)
+  }
+
+  function handleAddPago(data: Omit<PagoFactura, "id">) {
+    const newPago: PagoFactura = {
+      ...data,
+      id: `p-${Date.now()}`,
+    }
+    setPagos((prev) => [...prev, newPago])
+
+    // Check if fully paid
+    const factura = facturas.find((f) => f.id === data.factura_id)
+    if (factura) {
+      const totalPagado = pagos
+        .filter((p) => p.factura_id === factura.id)
+        .reduce((sum, p) => sum + p.importe, 0) + data.importe
+
+      if (totalPagado >= factura.total) {
+        setFacturas((prev) =>
+          prev.map((f) =>
+            f.id === factura.id
+              ? { ...f, estado: "pagada" as const, fecha_pago: data.fecha }
+              : f
+          )
+        )
+        toast.success("Pago registrado. Factura completamente pagada.")
+      } else {
+        setFacturas((prev) =>
+          prev.map((f) =>
+            f.id === factura.id
+              ? { ...f, estado: "parcial" as const }
+              : f
+          )
+        )
+        toast.success("Pago parcial registrado correctamente.")
+      }
+    }
   }
 
   function clearFilters() {
@@ -374,9 +439,11 @@ export default function FacturacionPage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         factura={detailFactura}
+        pagos={pagos}
         onEdit={handleEdit}
         onMarkPaid={handleMarkPaid}
         onAnular={handleAnular}
+        onAddPago={handleAddPago}
       />
     </div>
   )
