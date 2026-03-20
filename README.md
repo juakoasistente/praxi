@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚗 Praxi — Gestión de Autoescuelas
 
-## Getting Started
+Plataforma moderna para gestionar tu autoescuela: alumnos, profesores, clases prácticas, facturación y mucho más.
 
-First, run the development server:
+## Stack Tecnológico
+
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router + TypeScript)
+- **Base de datos:** [Supabase](https://supabase.com/) (PostgreSQL + Auth + RLS)
+- **UI:** [shadcn/ui](https://ui.shadcn.com/) + [Tailwind CSS v4](https://tailwindcss.com/)
+- **Recursos UI:** [21st.dev](https://21st.dev/) para componentes adicionales
+
+## Requisitos
+
+- Node.js 18+
+- npm 9+
+- Cuenta de Supabase (free tier)
+
+## Correr en Local
 
 ```bash
+# 1. Clonar el repo
+git clone https://github.com/juakoasistente/praxi.git
+cd praxi
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env.local
+# Edita .env.local con tus credenciales de Supabase
+
+# 4. Arrancar el servidor de desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables de Entorno
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Descripción |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL de tu proyecto Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave anónima (pública) de Supabase |
 
-## Learn More
+## Estructura del Proyecto
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Páginas y layouts (App Router)
+│   ├── (auth)/             # Páginas públicas (login)
+│   ├── (dashboard)/        # Páginas protegidas (gestión)
+│   └── page.tsx            # Landing
+├── components/
+│   ├── ui/                 # Componentes shadcn/ui
+│   └── [feature]/          # Componentes por feature
+├── lib/                    # Utilidades, cliente Supabase, types
+└── hooks/                  # Custom hooks
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ver [docs/conventions.md](docs/conventions.md) para convenciones detalladas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentación
 
-## Deploy on Vercel
+- [Convenciones del proyecto](docs/conventions.md)
+- [Decisiones de diseño](docs/design-decisions.md)
+- [Backlog de features](docs/features-backlog.md)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contribuir
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Crea una rama: `feat/mi-feature` o `fix/mi-fix`
+2. Commits con [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`
+3. Abre un PR con descripción clara
+4. Código en inglés, UI en español
+
+## Licencia
+
+Privado — todos los derechos reservados.
