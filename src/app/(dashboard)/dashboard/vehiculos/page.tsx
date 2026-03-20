@@ -51,6 +51,9 @@ import {
   createIncidenciaVehiculo,
 } from "@/lib/services/vehiculos"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV, exportFormatCurrency } from "@/lib/export"
+import type { EstadoVehiculo, TipoVehiculo } from "@/components/vehiculos/types"
 import { toast } from "sonner"
 
 function formatCurrency(amount: number) {
@@ -232,26 +235,49 @@ export default function VehiculosPage() {
             </p>
           </div>
         </div>
-        <RequireWrite entity="vehiculos">
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setCompararDialogOpen(true)}
-            >
-              <Scale className="size-4" data-icon="inline-start" />
-              Comparar
-            </Button>
-            <Button
-              onClick={() => {
-                setEditingVehiculo(null)
-                setFormOpen(true)
-              }}
-            >
-              <Plus className="size-4" data-icon="inline-start" />
-              Nuevo vehículo
-            </Button>
-          </div>
-        </RequireWrite>
+        <div className="flex gap-2">
+          <ExportButton
+            onExport={() =>
+              exportToCSV(
+                filtered.map((v) => ({
+                  ...v,
+                  coste_total: getCosteTotalVehiculo(v.id, v.precio_adquisicion),
+                })),
+                [
+                  { key: "marca", label: "Marca" },
+                  { key: "modelo", label: "Modelo" },
+                  { key: "matricula", label: "Matrícula" },
+                  { key: "tipo", label: "Tipo", format: (v) => TIPO_LABELS[v as TipoVehiculo] ?? String(v) },
+                  { key: "año", label: "Año" },
+                  { key: "km_actuales", label: "Km", format: (v) => Number(v).toLocaleString("es-ES") },
+                  { key: "estado", label: "Estado", format: (v) => ESTADO_LABELS[v as EstadoVehiculo] ?? String(v) },
+                  { key: "coste_total", label: "Coste total", format: (v) => exportFormatCurrency(Number(v)) },
+                ],
+                "vehiculos"
+              )
+            }
+          />
+          <RequireWrite entity="vehiculos">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCompararDialogOpen(true)}
+              >
+                <Scale className="size-4" data-icon="inline-start" />
+                Comparar
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditingVehiculo(null)
+                  setFormOpen(true)
+                }}
+              >
+                <Plus className="size-4" data-icon="inline-start" />
+                Nuevo vehículo
+              </Button>
+            </div>
+          </RequireWrite>
+        </div>
       </div>
 
       {/* Filters */}

@@ -30,6 +30,8 @@ import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getProfesores, createProfesor, updateProfesor } from "@/lib/services/profesores"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV } from "@/lib/export"
 import { toast } from "sonner"
 
 export default function ProfesoresPage() {
@@ -133,17 +135,30 @@ export default function ProfesoresPage() {
             </p>
           </div>
         </div>
-        <RequireWrite entity="profesores">
-          <Button
-            onClick={() => {
-              setEditingProfesor(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus className="size-4" data-icon="inline-start" />
-            Nuevo profesor
-          </Button>
-        </RequireWrite>
+        <div className="flex gap-2">
+          <ExportButton
+            onExport={() =>
+              exportToCSV(filtered, [
+                { key: "nombre", label: "Nombre" },
+                { key: "apellidos", label: "Apellidos" },
+                { key: "email", label: "Email" },
+                { key: "telefono", label: "Teléfono" },
+                { key: "permisos_habilitados", label: "Especialidad", format: (v) => (v as string[]).join(", ") },
+              ], "profesores")
+            }
+          />
+          <RequireWrite entity="profesores">
+            <Button
+              onClick={() => {
+                setEditingProfesor(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus className="size-4" data-icon="inline-start" />
+              Nuevo profesor
+            </Button>
+          </RequireWrite>
+        </div>
       </div>
 
       {/* Search */}

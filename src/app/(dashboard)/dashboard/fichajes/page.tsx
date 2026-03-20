@@ -37,6 +37,8 @@ import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getFichajes, createFichaje, getUserProfile } from "@/lib/services/fichajes"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV, exportFormatDate } from "@/lib/export"
 import { toast } from "sonner"
 
 function formatTime(isoStr: string) {
@@ -207,20 +209,43 @@ export default function FichajesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Image
-          src="/icons/fichajes.png"
-          alt="Fichajes"
-          width={36}
-          height={36}
-          className="shrink-0"
-        />
-        <div>
-          <h1 className="text-3xl font-bold">Fichajes</h1>
-          <p className="text-muted-foreground">
-            Control de entrada y salida del personal
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/icons/fichajes.png"
+            alt="Fichajes"
+            width={36}
+            height={36}
+            className="shrink-0"
+          />
+          <div>
+            <h1 className="text-3xl font-bold">Fichajes</h1>
+            <p className="text-muted-foreground">
+              Control de entrada y salida del personal
+            </p>
+          </div>
         </div>
+        <ExportButton
+          onExport={() =>
+            exportToCSV(
+              fichajesFiltrados.map((f) => ({
+                usuario: `${f.usuario_nombre} ${f.usuario_apellidos}`,
+                tipo: f.tipo === "entrada" ? "Entrada" : "Salida",
+                fecha: exportFormatDate(f.timestamp),
+                hora: new Date(f.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+                metodo: f.metodo === "app" ? "App" : "Manual",
+              })),
+              [
+                { key: "usuario", label: "Usuario" },
+                { key: "tipo", label: "Tipo" },
+                { key: "fecha", label: "Fecha" },
+                { key: "hora", label: "Hora" },
+                { key: "metodo", label: "Método" },
+              ],
+              "fichajes"
+            )
+          }
+        />
       </div>
 
       {/* Tarjeta de fichar */}

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BarChart3 } from "lucide-react"
+import { BarChart3, Download } from "lucide-react"
 import {
   BarChart,
   Bar,
@@ -17,7 +17,9 @@ import {
   LineChart,
   Line,
 } from "recharts"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { exportToCSV, exportFormatCurrency } from "@/lib/export"
 import { MOCK_EXAMENES } from "@/components/examenes/mock-data"
 import { MOCK_FACTURAS } from "@/components/facturacion/mock-data"
 import { MOCK_VEHICULOS, MOCK_COSTES } from "@/components/vehiculos/mock-data"
@@ -176,8 +178,20 @@ export default function EstadisticasPage() {
       {/* Tasa de aprobados - Main metric + donut */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Tasa de aprobados</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                exportToCSV(donutData, [
+                  { key: "name", label: "Resultado" },
+                  { key: "value", label: "Cantidad" },
+                ], "estadisticas-aprobados")
+              }
+            >
+              <Download className="size-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="text-center mb-4">
@@ -284,8 +298,20 @@ export default function EstadisticasPage() {
       {/* Aprobados por profesor + Actividad mensual */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Aprobados por profesor</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                exportToCSV(profesorStats, [
+                  { key: "profesor", label: "Profesor" },
+                  { key: "tasa", label: "Tasa aprobados (%)" },
+                ], "estadisticas-profesores")
+              }
+            >
+              <Download className="size-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -323,8 +349,21 @@ export default function EstadisticasPage() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Actividad mensual de exámenes</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                exportToCSV(actividadMensual, [
+                  { key: "mes", label: "Mes" },
+                  { key: "teorico", label: "Teórico" },
+                  { key: "practico", label: "Práctico" },
+                ], "estadisticas-actividad-mensual")
+              }
+            >
+              <Download className="size-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -377,8 +416,20 @@ export default function EstadisticasPage() {
       {/* Vehículos coste/km + Resumen financiero */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Coste por km por vehículo</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                exportToCSV(costePorKm, [
+                  { key: "vehiculo", label: "Vehículo" },
+                  { key: "costePorKm", label: "Coste por km (€)", format: (v) => `${Number(v).toFixed(2)} €` },
+                ], "estadisticas-coste-km")
+              }
+            >
+              <Download className="size-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -415,8 +466,21 @@ export default function EstadisticasPage() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Resumen financiero</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                exportToCSV(resumenFinanciero, [
+                  { key: "mes", label: "Mes" },
+                  { key: "facturado", label: "Facturado", format: (v) => exportFormatCurrency(Number(v)) },
+                  { key: "cobrado", label: "Cobrado", format: (v) => exportFormatCurrency(Number(v)) },
+                ], "estadisticas-financiero")
+              }
+            >
+              <Download className="size-4" />
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 mb-4">

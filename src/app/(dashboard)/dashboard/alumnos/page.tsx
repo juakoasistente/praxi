@@ -30,6 +30,8 @@ import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { getAlumnos, createAlumno, updateAlumno } from "@/lib/services/alumnos"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV, exportFormatDate } from "@/lib/export"
 import type { Alumno, PermisoType, EstadoAlumno } from "@/components/alumnos/types"
 import {
   ESTADO_LABELS,
@@ -153,17 +155,33 @@ export default function AlumnosPage() {
             </p>
           </div>
         </div>
-        <RequireWrite entity="alumnos">
-          <Button
-            onClick={() => {
-              setEditingAlumno(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus className="size-4" data-icon="inline-start" />
-            Nuevo alumno
-          </Button>
-        </RequireWrite>
+        <div className="flex gap-2">
+          <ExportButton
+            onExport={() =>
+              exportToCSV(filtered, [
+                { key: "nombre", label: "Nombre" },
+                { key: "apellidos", label: "Apellidos" },
+                { key: "dni", label: "DNI" },
+                { key: "telefono", label: "Teléfono" },
+                { key: "email", label: "Email", format: (v) => (v as string) ?? "" },
+                { key: "permiso", label: "Permiso" },
+                { key: "estado", label: "Estado", format: (v) => ESTADO_LABELS[v as EstadoAlumno] ?? String(v) },
+                { key: "fecha_matricula", label: "Fecha matrícula", format: (v) => exportFormatDate(v as string) },
+              ], "alumnos")
+            }
+          />
+          <RequireWrite entity="alumnos">
+            <Button
+              onClick={() => {
+                setEditingAlumno(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus className="size-4" data-icon="inline-start" />
+              Nuevo alumno
+            </Button>
+          </RequireWrite>
+        </div>
       </div>
 
       {/* Filters */}

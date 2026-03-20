@@ -34,6 +34,9 @@ import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getFacturas, createFactura, updateFactura } from "@/lib/services/facturacion"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV, exportFormatDate, exportFormatCurrency } from "@/lib/export"
+import type { EstadoFactura } from "@/components/facturacion/types"
 import { toast } from "sonner"
 
 function formatDate(dateStr: string) {
@@ -269,17 +272,31 @@ export default function FacturacionPage() {
             </p>
           </div>
         </div>
-        <RequireWrite entity="facturacion">
-          <Button
-            onClick={() => {
-              setEditingFactura(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus className="size-4" data-icon="inline-start" />
-            Nueva factura
-          </Button>
-        </RequireWrite>
+        <div className="flex gap-2">
+          <ExportButton
+            onExport={() =>
+              exportToCSV(filtered, [
+                { key: "numero", label: "Nº Factura" },
+                { key: "alumno_nombre", label: "Alumno" },
+                { key: "fecha_emision", label: "Fecha emisión", format: (v) => exportFormatDate(v as string) },
+                { key: "total", label: "Total", format: (v) => exportFormatCurrency(Number(v)) },
+                { key: "estado", label: "Estado", format: (v) => ESTADO_FACTURA_LABELS[v as EstadoFactura] ?? String(v) },
+                { key: "fecha_pago", label: "Fecha pago", format: (v) => v ? exportFormatDate(v as string) : "" },
+              ], "facturacion")
+            }
+          />
+          <RequireWrite entity="facturacion">
+            <Button
+              onClick={() => {
+                setEditingFactura(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus className="size-4" data-icon="inline-start" />
+              Nueva factura
+            </Button>
+          </RequireWrite>
+        </div>
       </div>
 
       {/* Stats cards */}

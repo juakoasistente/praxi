@@ -36,6 +36,9 @@ import {
   RESULTADOS,
 } from "@/components/examenes/types"
 import { RequireWrite } from "@/components/auth/require-write"
+import { ExportButton } from "@/components/ui/export-button"
+import { exportToCSV, exportFormatDate } from "@/lib/export"
+import type { TipoExamen, ResultadoExamen } from "@/components/examenes/types"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import {
   getExamenes,
@@ -169,17 +172,32 @@ export default function ExamenesPage() {
             </p>
           </div>
         </div>
-        <RequireWrite entity="examenes">
-          <Button
-            onClick={() => {
-              setEditingExamen(null)
-              setFormOpen(true)
-            }}
-          >
-            <Plus className="size-4" data-icon="inline-start" />
-            Nuevo examen
-          </Button>
-        </RequireWrite>
+        <div className="flex gap-2">
+          <ExportButton
+            onExport={() =>
+              exportToCSV(filtered, [
+                { key: "alumno_nombre", label: "Alumno" },
+                { key: "tipo", label: "Tipo", format: (v) => TIPO_LABELS[v as TipoExamen] ?? String(v) },
+                { key: "fecha", label: "Fecha", format: (v) => exportFormatDate(v as string) },
+                { key: "resultado", label: "Resultado", format: (v) => RESULTADO_LABELS[v as ResultadoExamen] ?? String(v) },
+                { key: "intento", label: "Intento" },
+                { key: "convocatoria", label: "Convocatoria", format: (v) => (v as string) ?? "" },
+                { key: "centro_examen", label: "Centro", format: (v) => (v as string) ?? "" },
+              ], "examenes")
+            }
+          />
+          <RequireWrite entity="examenes">
+            <Button
+              onClick={() => {
+                setEditingExamen(null)
+                setFormOpen(true)
+              }}
+            >
+              <Plus className="size-4" data-icon="inline-start" />
+              Nuevo examen
+            </Button>
+          </RequireWrite>
+        </div>
       </div>
 
       {/* Stats cards */}

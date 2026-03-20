@@ -16,6 +16,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/fichajes", label: "Fichajes", icon: "/icons/fichajes.png" },
   { href: "/dashboard/examenes", label: "Exámenes", icon: "/icons/examenes.png" },
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3" },
+  { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings" },
 ]
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {
@@ -29,6 +30,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/examenes",
     "/dashboard/fichajes",
     "/dashboard/estadisticas",
+    "/dashboard/configuracion",
   ],
   profesor: [
     "/dashboard",
@@ -48,7 +50,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
 }
 
 const ROLE_WRITE: Record<UserRole, string[]> = {
-  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes"],
+  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes", "configuracion"],
   profesor: ["clases", "fichajes"],
   secretario: ["alumnos", "clases", "examenes", "facturacion", "fichajes"],
 }
