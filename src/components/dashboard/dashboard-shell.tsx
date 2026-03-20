@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { RoleProvider } from '@/components/auth/role-provider'
 import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import { BarChart3 } from 'lucide-react'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -112,12 +113,15 @@ export function DashboardShell({
     <div className="flex h-screen">
       {/* Sidebar desktop */}
       <aside className="hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex">
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-2.5 px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-            <span className="text-sm font-bold text-sidebar-primary-foreground">P</span>
+        {/* Logo + notifications */}
+        <div className="flex h-16 items-center justify-between px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+              <span className="text-sm font-bold text-sidebar-primary-foreground">P</span>
+            </div>
+            <span className="text-lg font-bold tracking-tight">Praxi</span>
           </div>
-          <span className="text-lg font-bold tracking-tight">Praxi</span>
+          <NotificationBell />
         </div>
 
         {/* Nav */}
@@ -186,7 +190,8 @@ export function DashboardShell({
               </div>
             </SheetContent>
           </Sheet>
-          <span className="font-semibold">Praxi</span>
+          <span className="flex-1 font-semibold">Praxi</span>
+          <NotificationBell />
         </header>
 
         {/* Main content */}
