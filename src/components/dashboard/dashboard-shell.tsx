@@ -109,10 +109,10 @@ export function DashboardShell({
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center gap-4 border-b px-4 md:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
+            <SheetTrigger>
+              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium h-8 w-8 hover:bg-accent hover:text-accent-foreground">
                 ☰
-              </Button>
+              </button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-4">
               <div className="mb-6 flex items-center gap-2 px-3">
