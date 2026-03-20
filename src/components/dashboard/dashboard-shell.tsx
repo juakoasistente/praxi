@@ -15,12 +15,14 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { OfflineIndicator } from '@/components/pwa/offline-indicator'
-import { BarChart3, Settings, Inbox } from 'lucide-react'
+import { BarChart3, Settings, Inbox, FileSignature, FileBarChart } from 'lucide-react'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
   Settings,
   Inbox,
+  FileSignature,
+  FileBarChart,
 }
 
 interface UserProfile {

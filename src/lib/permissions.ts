@@ -16,7 +16,9 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/fichajes", label: "Fichajes", icon: "/icons/fichajes.png" },
   { href: "/dashboard/examenes", label: "Exámenes", icon: "/icons/examenes.png" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
+  { href: "/dashboard/contratos", label: "Contratos", icon: "FileSignature" },
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3" },
+  { href: "/dashboard/informes", label: "Informes", icon: "FileBarChart" },
   { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings" },
 ]
 
@@ -31,7 +33,9 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/examenes",
     "/dashboard/fichajes",
     "/dashboard/inbox",
+    "/dashboard/contratos",
     "/dashboard/estadisticas",
+    "/dashboard/informes",
     "/dashboard/configuracion",
   ],
   profesor: [
@@ -48,14 +52,15 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/examenes",
     "/dashboard/facturacion",
     "/dashboard/fichajes",
+    "/dashboard/contratos",
     "/dashboard/inbox",
   ],
 }
 
 const ROLE_WRITE: Record<UserRole, string[]> = {
-  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes", "configuracion", "inbox"],
+  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes", "configuracion", "inbox", "contratos"],
   profesor: ["clases", "fichajes"],
-  secretario: ["alumnos", "clases", "examenes", "facturacion", "fichajes", "inbox"],
+  secretario: ["alumnos", "clases", "examenes", "facturacion", "fichajes", "inbox", "contratos"],
 }
 
 export function canAccess(role: UserRole, path: string): boolean {
