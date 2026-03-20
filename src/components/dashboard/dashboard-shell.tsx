@@ -13,6 +13,8 @@ import { RoleProvider } from '@/components/auth/role-provider'
 import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import { InstallPrompt } from '@/components/pwa/install-prompt'
+import { OfflineIndicator } from '@/components/pwa/offline-indicator'
 import { BarChart3 } from 'lucide-react'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -163,6 +165,7 @@ export function DashboardShell({
 
       {/* Mobile header + sheet */}
       <div className="flex flex-1 flex-col">
+        <OfflineIndicator />
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger>
@@ -200,6 +203,7 @@ export function DashboardShell({
             <div className="p-6 lg:p-8">{children}</div>
           </RoleProvider>
         </main>
+        <InstallPrompt />
       </div>
     </div>
   )

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -105,6 +106,16 @@ export default function LoginPage() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+
+          <p className="text-center text-sm text-muted-foreground">
+            ¿Eres alumno?{' '}
+            <Link
+              href="/portal"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Accede a tu portal
+            </Link>
+          </p>
         </div>
       </div>
     </div>
