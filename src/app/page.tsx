@@ -1,8 +1,20 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect('/dashboard')
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg">
@@ -26,9 +38,11 @@ export default function Home() {
             <Badge variant="secondary">shadcn/ui</Badge>
             <Badge variant="secondary">Tailwind CSS</Badge>
           </div>
-          <Button className="w-full" size="lg">
-            Empezar
-          </Button>
+          <Link href="/login">
+            <Button className="w-full" size="lg">
+              Iniciar sesión
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>
