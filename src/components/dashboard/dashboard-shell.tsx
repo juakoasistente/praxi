@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -17,34 +18,51 @@ interface UserProfile {
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/dashboard/alumnos', label: 'Alumnos', icon: '👤' },
-  { href: '/dashboard/profesores', label: 'Profesores', icon: '👨‍🏫' },
-  { href: '/dashboard/clases', label: 'Clases', icon: '📅' },
-  { href: '/dashboard/vehiculos', label: 'Vehículos', icon: '🚗' },
-  { href: '/dashboard/facturacion', label: 'Facturación', icon: '💰' },
-  { href: '/dashboard/fichajes', label: 'Fichajes', icon: '⏱️' },
-  { href: '/dashboard/examenes', label: 'Exámenes', icon: '📝' },
+  { href: '/dashboard', label: 'Dashboard', icon: '/icons/dashboard.png' },
+  { href: '/dashboard/alumnos', label: 'Alumnos', icon: '/icons/alumnos.png' },
+  { href: '/dashboard/profesores', label: 'Profesores', icon: '/icons/profesores.png' },
+  { href: '/dashboard/clases', label: 'Clases', icon: '/icons/clases.png' },
+  { href: '/dashboard/vehiculos', label: 'Vehículos', icon: '/icons/vehiculos.png' },
+  { href: '/dashboard/facturacion', label: 'Facturación', icon: '/icons/facturacion.png' },
+  { href: '/dashboard/fichajes', label: 'Fichajes', icon: '/icons/fichajes.png' },
+  { href: '/dashboard/examenes', label: 'Exámenes', icon: '/icons/examenes.png' },
 ]
 
-function NavLinks({ pathname, onClick }: { pathname: string; onClick?: () => void }) {
+function NavLinks({
+  pathname,
+  onClick,
+}: {
+  pathname: string
+  onClick?: () => void
+}) {
   return (
     <nav className="flex flex-col gap-1">
-      {navItems.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={onClick}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-            pathname === item.href
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-          }`}
-        >
-          <span>{item.icon}</span>
-          {item.label}
-        </Link>
-      ))}
+      {navItems.map((item) => {
+        const isActive = item.href === '/dashboard'
+          ? pathname === '/dashboard'
+          : pathname.startsWith(item.href)
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onClick}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+              isActive
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+            }`}
+          >
+            <Image
+              src={item.icon}
+              alt={item.label}
+              width={20}
+              height={20}
+              className="shrink-0"
+            />
+            {item.label}
+          </Link>
+        )
+      })}
     </nav>
   )
 }
@@ -71,33 +89,55 @@ export function DashboardShell({
     ? `${user.nombre[0]}${user.apellidos[0]}`.toUpperCase()
     : '??'
 
+  const displayName = user
+    ? `${user.nombre} ${user.apellidos}`
+    : 'Usuario'
+
+  const rolLabel: Record<string, string> = {
+    admin: 'Administrador',
+    profesor: 'Profesor',
+    secretaria: 'Secretaría',
+  }
+
   return (
     <div className="flex h-screen">
       {/* Sidebar desktop */}
-      <aside className="hidden w-64 flex-col border-r bg-background p-4 md:flex">
-        <div className="mb-6 flex items-center gap-2 px-3">
-          <span className="text-2xl">🚗</span>
-          <span className="text-xl font-bold">Praxi</span>
+      <aside className="hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex">
+        {/* Logo */}
+        <div className="flex h-16 items-center gap-2.5 px-6">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+            <span className="text-sm font-bold text-sidebar-primary-foreground">P</span>
+          </div>
+          <span className="text-lg font-bold tracking-tight">Praxi</span>
         </div>
-        <NavLinks pathname={pathname} />
-        <div className="mt-auto">
-          <Separator className="my-4" />
-          <div className="flex items-center gap-3 px-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+
+        {/* Nav */}
+        <div className="flex-1 overflow-y-auto px-3 py-2">
+          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+            Menú
+          </p>
+          <NavLinks pathname={pathname} />
+        </div>
+
+        {/* User footer */}
+        <div className="border-t border-sidebar-border p-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9 border border-sidebar-border">
+              <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
+                {initials}
+              </AvatarFallback>
             </Avatar>
             <div className="flex-1 truncate">
-              <p className="text-sm font-medium truncate">
-                {user?.nombre} {user?.apellidos}
-              </p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {user?.rol}
+              <p className="text-sm font-medium truncate">{displayName}</p>
+              <p className="text-xs text-sidebar-foreground/50">
+                {rolLabel[user?.rol ?? ''] ?? user?.rol ?? 'Sin rol'}
               </p>
             </div>
           </div>
           <Button
             variant="ghost"
-            className="mt-2 w-full justify-start text-muted-foreground"
+            size="sm"
+            className="mt-3 w-full justify-start text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
             onClick={handleLogout}
           >
             Cerrar sesión
@@ -107,29 +147,39 @@ export function DashboardShell({
 
       {/* Mobile header + sheet */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b px-4 md:hidden">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger>
-              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium h-8 w-8 hover:bg-accent hover:text-accent-foreground">
-                ☰
+              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="4" x2="20" y1="12" y2="12" />
+                  <line x1="4" x2="20" y1="6" y2="6" />
+                  <line x1="4" x2="20" y1="18" y2="18" />
+                </svg>
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-4">
-              <div className="mb-6 flex items-center gap-2 px-3">
-                <span className="text-2xl">🚗</span>
-                <span className="text-xl font-bold">Praxi</span>
+            <SheetContent side="left" className="w-64 bg-sidebar text-sidebar-foreground p-0">
+              <div className="flex h-16 items-center gap-2.5 px-6">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+                  <span className="text-sm font-bold text-sidebar-primary-foreground">P</span>
+                </div>
+                <span className="text-lg font-bold tracking-tight">Praxi</span>
               </div>
-              <NavLinks
-                pathname={pathname}
-                onClick={() => setMobileOpen(false)}
-              />
+              <div className="px-3">
+                <NavLinks
+                  pathname={pathname}
+                  onClick={() => setMobileOpen(false)}
+                />
+              </div>
             </SheetContent>
           </Sheet>
           <span className="font-semibold">Praxi</span>
         </header>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-background">
+          <div className="p-6 lg:p-8">{children}</div>
+        </main>
       </div>
     </div>
   )

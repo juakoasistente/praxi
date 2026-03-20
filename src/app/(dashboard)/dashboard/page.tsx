@@ -1,8 +1,9 @@
+import Image from 'next/image'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -10,25 +11,21 @@ import {
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  // Contar alumnos activos
   const { count: alumnosCount } = await supabase
     .from('alumno')
     .select('*', { count: 'exact', head: true })
     .neq('estado', 'baja')
 
-  // Contar profesores
   const { count: profesoresCount } = await supabase
     .from('profesor')
     .select('*', { count: 'exact', head: true })
 
-  // Clases de hoy
   const today = new Date().toISOString().split('T')[0]
   const { count: clasesHoy } = await supabase
     .from('clase')
     .select('*', { count: 'exact', head: true })
     .eq('fecha', today)
 
-  // Facturas pendientes
   const { count: facturasPendientes } = await supabase
     .from('factura')
     .select('*', { count: 'exact', head: true })
@@ -38,53 +35,136 @@ export default async function DashboardPage() {
     {
       title: 'Alumnos activos',
       value: alumnosCount ?? 0,
-      icon: '👤',
-      description: 'matriculados y en curso',
+      icon: '/icons/alumnos.png',
+      description: 'Matriculados y en curso',
+      href: '/dashboard/alumnos',
+      color: 'bg-blue-50 border-blue-100',
     },
     {
       title: 'Profesores',
       value: profesoresCount ?? 0,
-      icon: '👨‍🏫',
-      description: 'en plantilla',
+      icon: '/icons/profesores.png',
+      description: 'En plantilla',
+      href: '/dashboard/profesores',
+      color: 'bg-emerald-50 border-emerald-100',
     },
     {
       title: 'Clases hoy',
       value: clasesHoy ?? 0,
-      icon: '📅',
-      description: today,
+      icon: '/icons/clases.png',
+      description: new Date().toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }),
+      href: '/dashboard/clases',
+      color: 'bg-amber-50 border-amber-100',
     },
     {
       title: 'Facturas pendientes',
       value: facturasPendientes ?? 0,
-      icon: '💰',
-      description: 'por cobrar',
+      icon: '/icons/facturacion.png',
+      description: 'Por cobrar',
+      href: '/dashboard/facturacion',
+      color: 'bg-rose-50 border-rose-100',
+    },
+  ]
+
+  const quickLinks = [
+    {
+      title: 'Nuevo alumno',
+      description: 'Matricular un alumno',
+      icon: '/icons/alumnos.png',
+      href: '/dashboard/alumnos',
+    },
+    {
+      title: 'Programar clase',
+      description: 'Asignar clase práctica',
+      icon: '/icons/clases.png',
+      href: '/dashboard/clases',
+    },
+    {
+      title: 'Subir a examen',
+      description: 'Gestionar presentaciones',
+      icon: '/icons/examenes.png',
+      href: '/dashboard/examenes',
+    },
+    {
+      title: 'Fichaje',
+      description: 'Registrar entrada/salida',
+      icon: '/icons/fichajes.png',
+      href: '/dashboard/fichajes',
     },
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Resumen de tu autoescuela
+        <h1 className="text-2xl font-bold tracking-tight lg:text-3xl">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          Resumen general de tu autoescuela
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stats cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <span className="text-2xl">{stat.icon}</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
-              <CardDescription>{stat.description}</CardDescription>
-            </CardContent>
-          </Card>
+          <Link key={stat.title} href={stat.href}>
+            <Card className={`border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${stat.color}`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <div className="rounded-lg bg-white/80 p-2 shadow-sm">
+                  <Image
+                    src={stat.icon}
+                    alt={stat.title}
+                    width={24}
+                    height={24}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{stat.value}</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
+      </div>
+
+      {/* Quick actions */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold">Acciones rápidas</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {quickLinks.map((link) => (
+            <Link key={link.title} href={link.href}>
+              <Card className="border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30">
+                <CardContent className="flex items-center gap-4 p-4">
+                  <div className="rounded-lg bg-primary/5 p-2.5">
+                    <Image
+                      src={link.icon}
+                      alt={link.title}
+                      width={28}
+                      height={28}
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{link.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {link.description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )
