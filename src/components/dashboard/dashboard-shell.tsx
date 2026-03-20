@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { useState } from 'react'
 import { RoleProvider } from '@/components/auth/role-provider'
 import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface UserProfile {
   nombre: string
@@ -130,14 +131,17 @@ export function DashboardShell({
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-3 w-full justify-start text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-            onClick={handleLogout}
-          >
-            Cerrar sesión
-          </Button>
+          <div className="mt-3 flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 justify-start text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 

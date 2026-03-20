@@ -25,6 +25,7 @@ import {
   METODO_PAGO_LABELS,
   CONCEPTO_LABELS,
 } from "./types"
+import { DescargarPdfButton } from "./descargar-pdf-button"
 
 interface FacturaDetailSheetProps {
   open: boolean
@@ -178,7 +179,8 @@ export function FacturaDetailSheet({
             </>
           )}
           <Separator />
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <DescargarPdfButton factura={factura} />
             <Button
               variant="outline"
               className="flex-1"

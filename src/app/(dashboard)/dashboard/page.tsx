@@ -39,7 +39,7 @@ export default async function DashboardPage() {
       icon: '/icons/alumnos.png',
       description: 'Matriculados y en curso',
       href: '/dashboard/alumnos',
-      color: 'bg-blue-50 border-blue-100',
+      color: 'bg-blue-50 border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/30',
     },
     {
       title: 'Profesores',
@@ -47,7 +47,7 @@ export default async function DashboardPage() {
       icon: '/icons/profesores.png',
       description: 'En plantilla',
       href: '/dashboard/profesores',
-      color: 'bg-emerald-50 border-emerald-100',
+      color: 'bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/30',
     },
     {
       title: 'Clases hoy',
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
         month: 'long',
       }),
       href: '/dashboard/clases',
-      color: 'bg-amber-50 border-amber-100',
+      color: 'bg-amber-50 border-amber-100 dark:bg-amber-950/30 dark:border-amber-900/30',
     },
     {
       title: 'Facturas pendientes',
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       icon: '/icons/facturacion.png',
       description: 'Por cobrar',
       href: '/dashboard/facturacion',
-      color: 'bg-rose-50 border-rose-100',
+      color: 'bg-rose-50 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/30',
     },
   ]
 
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
-                <div className="rounded-lg bg-white/80 p-2 shadow-sm">
+                <div className="rounded-lg bg-white/80 dark:bg-white/10 p-2 shadow-sm">
                   <Image
                     src={stat.icon}
                     alt={stat.title}
