@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import type { Examen, TipoExamen, ResultadoExamen } from "./types"
 import { TIPOS_EXAMEN, TIPO_LABELS, RESULTADOS, RESULTADO_LABELS } from "./types"
+import { examenSchema } from "@/lib/validations/examen"
 
 type ExamenFormData = Omit<Examen, "id">
 
@@ -52,6 +53,7 @@ export function ExamenFormDialog({
   onSave,
 }: ExamenFormDialogProps) {
   const [form, setForm] = React.useState<ExamenFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
   const isEditing = !!examen
 
   React.useEffect(() => {
@@ -61,10 +63,32 @@ export function ExamenFormDialog({
     } else {
       setForm(EMPTY_FORM)
     }
+    setErrors({})
   }, [examen, open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = examenSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -87,13 +111,14 @@ export function ExamenFormDialog({
             <Label htmlFor="alumno_nombre">Alumno *</Label>
             <Input
               id="alumno_nombre"
-              required
               placeholder="Nombre del alumno"
               value={form.alumno_nombre}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, alumno_nombre: e.target.value })
-              }
+                clearError("alumno_nombre")
+              }}
             />
+            {errors.alumno_nombre && <p className="text-xs text-destructive mt-1">{errors.alumno_nombre}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -121,13 +146,14 @@ export function ExamenFormDialog({
               <Input
                 id="intento"
                 type="number"
-                required
                 min={1}
                 value={form.intento}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, intento: Number(e.target.value) })
-                }
+                  clearError("intento")
+                }}
               />
+              {errors.intento && <p className="text-xs text-destructive mt-1">{errors.intento}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -136,12 +162,13 @@ export function ExamenFormDialog({
               <Input
                 id="fecha"
                 type="date"
-                required
                 value={form.fecha}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha: e.target.value })
-                }
+                  clearError("fecha")
+                }}
               />
+              {errors.fecha && <p className="text-xs text-destructive mt-1">{errors.fecha}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="hora">Hora</Label>

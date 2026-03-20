@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import type { Alumno, PermisoType, EstadoAlumno } from "./types"
 import { PERMISOS, ESTADOS, ESTADO_LABELS } from "./types"
+import { alumnoSchema } from "@/lib/validations/alumno"
 
 type AlumnoFormData = Omit<Alumno, "id">
 
@@ -53,6 +54,7 @@ export function AlumnoFormDialog({
   onSave,
 }: AlumnoFormDialogProps) {
   const [form, setForm] = React.useState<AlumnoFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
   const isEditing = !!alumno
 
   React.useEffect(() => {
@@ -62,10 +64,32 @@ export function AlumnoFormDialog({
     } else {
       setForm(EMPTY_FORM)
     }
+    setErrors({})
   }, [alumno, open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = alumnoSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -89,23 +113,25 @@ export function AlumnoFormDialog({
               <Label htmlFor="nombre">Nombre *</Label>
               <Input
                 id="nombre"
-                required
                 value={form.nombre}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, nombre: e.target.value })
-                }
+                  clearError("nombre")
+                }}
               />
+              {errors.nombre && <p className="text-xs text-destructive mt-1">{errors.nombre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="apellidos">Apellidos *</Label>
               <Input
                 id="apellidos"
-                required
                 value={form.apellidos}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, apellidos: e.target.value })
-                }
+                  clearError("apellidos")
+                }}
               />
+              {errors.apellidos && <p className="text-xs text-destructive mt-1">{errors.apellidos}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -113,23 +139,27 @@ export function AlumnoFormDialog({
               <Label htmlFor="dni">DNI *</Label>
               <Input
                 id="dni"
-                required
                 placeholder="12345678A"
                 value={form.dni}
-                onChange={(e) => setForm({ ...form, dni: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, dni: e.target.value })
+                  clearError("dni")
+                }}
               />
+              {errors.dni && <p className="text-xs text-destructive mt-1">{errors.dni}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="telefono">Teléfono *</Label>
               <Input
                 id="telefono"
-                required
                 placeholder="612 345 678"
                 value={form.telefono}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, telefono: e.target.value })
-                }
+                  clearError("telefono")
+                }}
               />
+              {errors.telefono && <p className="text-xs text-destructive mt-1">{errors.telefono}</p>}
             </div>
           </div>
           <div className="space-y-1.5">
@@ -138,10 +168,12 @@ export function AlumnoFormDialog({
               id="email"
               type="email"
               value={form.email ?? ""}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, email: e.target.value || null })
-              }
+                clearError("email")
+              }}
             />
+            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -149,24 +181,26 @@ export function AlumnoFormDialog({
               <Input
                 id="fecha_nacimiento"
                 type="date"
-                required
                 value={form.fecha_nacimiento}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha_nacimiento: e.target.value })
-                }
+                  clearError("fecha_nacimiento")
+                }}
               />
+              {errors.fecha_nacimiento && <p className="text-xs text-destructive mt-1">{errors.fecha_nacimiento}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="fecha_matricula">Fecha de matrícula *</Label>
               <Input
                 id="fecha_matricula"
                 type="date"
-                required
                 value={form.fecha_matricula}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha_matricula: e.target.value })
-                }
+                  clearError("fecha_matricula")
+                }}
               />
+              {errors.fecha_matricula && <p className="text-xs text-destructive mt-1">{errors.fecha_matricula}</p>}
             </div>
           </div>
           <div className="space-y-1.5">

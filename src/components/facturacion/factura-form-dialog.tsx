@@ -37,6 +37,7 @@ import {
   CONCEPTOS,
   CONCEPTO_LABELS,
 } from "./types"
+import { facturaSchema } from "@/lib/validations/factura"
 
 type FacturaFormData = Omit<Factura, "id">
 
@@ -85,6 +86,7 @@ export function FacturaFormDialog({
   nextNumero,
 }: FacturaFormDialogProps) {
   const [form, setForm] = React.useState<FacturaFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
   const isEditing = !!factura
 
   React.useEffect(() => {
@@ -94,7 +96,18 @@ export function FacturaFormDialog({
     } else {
       setForm({ ...EMPTY_FORM, numero: nextNumero })
     }
+    setErrors({})
   }, [factura, open, nextNumero])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function updateLinea(index: number, updates: Partial<LineaFactura>) {
     const newLineas = form.lineas.map((l, i) => {
@@ -105,6 +118,7 @@ export function FacturaFormDialog({
     })
     const total = newLineas.reduce((sum, l) => sum + l.subtotal, 0)
     setForm({ ...form, lineas: newLineas, total })
+    clearError("lineas")
   }
 
   function addLinea() {
@@ -113,6 +127,7 @@ export function FacturaFormDialog({
       id: String(Date.now()),
     }
     setForm({ ...form, lineas: [...form.lineas, newLinea] })
+    clearError("lineas")
   }
 
   function removeLinea(index: number) {
@@ -123,6 +138,17 @@ export function FacturaFormDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = facturaSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -154,13 +180,14 @@ export function FacturaFormDialog({
               <Label htmlFor="alumno_nombre">Alumno *</Label>
               <Input
                 id="alumno_nombre"
-                required
                 placeholder="Nombre del alumno"
                 value={form.alumno_nombre}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, alumno_nombre: e.target.value })
-                }
+                  clearError("alumno_nombre")
+                }}
               />
+              {errors.alumno_nombre && <p className="text-xs text-destructive mt-1">{errors.alumno_nombre}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -169,24 +196,26 @@ export function FacturaFormDialog({
               <Input
                 id="fecha_emision"
                 type="date"
-                required
                 value={form.fecha_emision}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha_emision: e.target.value })
-                }
+                  clearError("fecha_emision")
+                }}
               />
+              {errors.fecha_emision && <p className="text-xs text-destructive mt-1">{errors.fecha_emision}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="fecha_vencimiento">Fecha vencimiento *</Label>
               <Input
                 id="fecha_vencimiento"
                 type="date"
-                required
                 value={form.fecha_vencimiento}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha_vencimiento: e.target.value })
-                }
+                  clearError("fecha_vencimiento")
+                }}
               />
+              {errors.fecha_vencimiento && <p className="text-xs text-destructive mt-1">{errors.fecha_vencimiento}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -247,6 +276,7 @@ export function FacturaFormDialog({
                 Añadir línea
               </Button>
             </div>
+            {errors.lineas && <p className="text-xs text-destructive mb-2">{errors.lineas}</p>}
             {form.lineas.length > 0 ? (
               <div className="space-y-3">
                 {form.lineas.map((linea, idx) => (

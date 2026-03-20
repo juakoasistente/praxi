@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import type { IncidenciaVehiculo, TipoIncidencia } from "./types"
 import { TIPOS_INCIDENCIA, TIPO_INCIDENCIA_LABELS } from "./types"
+import { incidenciaSchema } from "@/lib/validations/incidencia"
 
 type IncidenciaFormData = Omit<IncidenciaVehiculo, "id" | "vehiculo_id">
 
@@ -44,13 +45,38 @@ export function IncidenciaFormDialog({
   onSave,
 }: IncidenciaFormDialogProps) {
   const [form, setForm] = React.useState<IncidenciaFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
 
   React.useEffect(() => {
-    if (open) setForm(EMPTY_FORM)
+    if (open) {
+      setForm(EMPTY_FORM)
+      setErrors({})
+    }
   }, [open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = incidenciaSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -69,13 +95,14 @@ export function IncidenciaFormDialog({
             <Label htmlFor="descripcion">Descripción *</Label>
             <Textarea
               id="descripcion"
-              required
               placeholder="Ej: Pinchazo en rueda delantera"
               value={form.descripcion}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, descripcion: e.target.value })
-              }
+                clearError("descripcion")
+              }}
             />
+            {errors.descripcion && <p className="text-xs text-destructive mt-1">{errors.descripcion}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -83,12 +110,13 @@ export function IncidenciaFormDialog({
               <Input
                 id="fecha-incidencia"
                 type="date"
-                required
                 value={form.fecha}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha: e.target.value })
-                }
+                  clearError("fecha")
+                }}
               />
+              {errors.fecha && <p className="text-xs text-destructive mt-1">{errors.fecha}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Tipo *</Label>

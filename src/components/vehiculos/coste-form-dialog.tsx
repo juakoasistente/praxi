@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import type { CosteVehiculo, CategoriaCoste } from "./types"
 import { CATEGORIAS_COSTE, CATEGORIA_COSTE_LABELS } from "./types"
+import { costeVehiculoSchema } from "@/lib/validations/coste-vehiculo"
 
 type CosteFormData = Omit<CosteVehiculo, "id" | "vehiculo_id">
 
@@ -44,13 +45,38 @@ export function CosteFormDialog({
   onSave,
 }: CosteFormDialogProps) {
   const [form, setForm] = React.useState<CosteFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
 
   React.useEffect(() => {
-    if (open) setForm(EMPTY_FORM)
+    if (open) {
+      setForm(EMPTY_FORM)
+      setErrors({})
+    }
   }, [open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = costeVehiculoSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -69,13 +95,14 @@ export function CosteFormDialog({
             <Label htmlFor="concepto">Concepto *</Label>
             <Input
               id="concepto"
-              required
               placeholder="Ej: Cambio de aceite"
               value={form.concepto}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, concepto: e.target.value })
-              }
+                clearError("concepto")
+              }}
             />
+            {errors.concepto && <p className="text-xs text-destructive mt-1">{errors.concepto}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -83,26 +110,28 @@ export function CosteFormDialog({
               <Input
                 id="importe"
                 type="number"
-                required
                 min={0}
                 step={0.01}
                 value={form.importe}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, importe: Number(e.target.value) })
-                }
+                  clearError("importe")
+                }}
               />
+              {errors.importe && <p className="text-xs text-destructive mt-1">{errors.importe}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="fecha">Fecha *</Label>
               <Input
                 id="fecha"
                 type="date"
-                required
                 value={form.fecha}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha: e.target.value })
-                }
+                  clearError("fecha")
+                }}
               />
+              {errors.fecha && <p className="text-xs text-destructive mt-1">{errors.fecha}</p>}
             </div>
           </div>
           <div className="space-y-1.5">

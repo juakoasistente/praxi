@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select"
 import type { Vehiculo, TipoVehiculo, EstadoVehiculo } from "./types"
 import { TIPOS, TIPO_LABELS, ESTADOS, ESTADO_LABELS } from "./types"
+import { vehiculoSchema } from "@/lib/validations/vehiculo"
 
 type VehiculoFormData = Omit<Vehiculo, "id">
 
@@ -52,6 +53,7 @@ export function VehiculoFormDialog({
   onSave,
 }: VehiculoFormDialogProps) {
   const [form, setForm] = React.useState<VehiculoFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
   const isEditing = !!vehiculo
 
   React.useEffect(() => {
@@ -61,10 +63,32 @@ export function VehiculoFormDialog({
     } else {
       setForm(EMPTY_FORM)
     }
+    setErrors({})
   }, [vehiculo, open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const result = vehiculoSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -88,23 +112,25 @@ export function VehiculoFormDialog({
               <Label htmlFor="marca">Marca *</Label>
               <Input
                 id="marca"
-                required
                 value={form.marca}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, marca: e.target.value })
-                }
+                  clearError("marca")
+                }}
               />
+              {errors.marca && <p className="text-xs text-destructive mt-1">{errors.marca}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="modelo">Modelo *</Label>
               <Input
                 id="modelo"
-                required
                 value={form.modelo}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, modelo: e.target.value })
-                }
+                  clearError("modelo")
+                }}
               />
+              {errors.modelo && <p className="text-xs text-destructive mt-1">{errors.modelo}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -112,13 +138,14 @@ export function VehiculoFormDialog({
               <Label htmlFor="matricula">Matrícula *</Label>
               <Input
                 id="matricula"
-                required
                 placeholder="1234 BCD"
                 value={form.matricula}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, matricula: e.target.value })
-                }
+                  clearError("matricula")
+                }}
               />
+              {errors.matricula && <p className="text-xs text-destructive mt-1">{errors.matricula}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Tipo *</Label>
@@ -147,27 +174,29 @@ export function VehiculoFormDialog({
               <Input
                 id="año"
                 type="number"
-                required
                 min={1990}
                 max={2030}
                 value={form.año}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, año: Number(e.target.value) })
-                }
+                  clearError("año")
+                }}
               />
+              {errors.año && <p className="text-xs text-destructive mt-1">{errors.año}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="km_actuales">Km actuales *</Label>
               <Input
                 id="km_actuales"
                 type="number"
-                required
                 min={0}
                 value={form.km_actuales}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, km_actuales: Number(e.target.value) })
-                }
+                  clearError("km_actuales")
+                }}
               />
+              {errors.km_actuales && <p className="text-xs text-destructive mt-1">{errors.km_actuales}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -176,26 +205,28 @@ export function VehiculoFormDialog({
               <Input
                 id="fecha_adquisicion"
                 type="date"
-                required
                 value={form.fecha_adquisicion}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, fecha_adquisicion: e.target.value })
-                }
+                  clearError("fecha_adquisicion")
+                }}
               />
+              {errors.fecha_adquisicion && <p className="text-xs text-destructive mt-1">{errors.fecha_adquisicion}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="precio_adquisicion">Precio adquisición (€) *</Label>
               <Input
                 id="precio_adquisicion"
                 type="number"
-                required
                 min={0}
                 step={0.01}
                 value={form.precio_adquisicion}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, precio_adquisicion: Number(e.target.value) })
-                }
+                  clearError("precio_adquisicion")
+                }}
               />
+              {errors.precio_adquisicion && <p className="text-xs text-destructive mt-1">{errors.precio_adquisicion}</p>}
             </div>
           </div>
           {isEditing && (

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import type { Profesor } from "./types"
+import { profesorSchema } from "@/lib/validations/profesor"
 
 const ALL_PERMISOS = ["AM", "A1", "A2", "A", "B", "C", "D"]
 
@@ -43,6 +44,7 @@ export function ProfesorFormDialog({
   onSave,
 }: ProfesorFormDialogProps) {
   const [form, setForm] = React.useState<ProfesorFormData>(EMPTY_FORM)
+  const [errors, setErrors] = React.useState<Record<string, string>>({})
   const isEditing = !!profesor
 
   React.useEffect(() => {
@@ -52,7 +54,18 @@ export function ProfesorFormDialog({
     } else {
       setForm(EMPTY_FORM)
     }
+    setErrors({})
   }, [profesor, open])
+
+  function clearError(field: string) {
+    if (errors[field]) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
+    }
+  }
 
   function togglePermiso(permiso: string) {
     setForm((prev) => ({
@@ -61,11 +74,22 @@ export function ProfesorFormDialog({
         ? prev.permisos_habilitados.filter((p) => p !== permiso)
         : [...prev.permisos_habilitados, permiso],
     }))
+    clearError("permisos_habilitados")
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (form.permisos_habilitados.length === 0) return
+    const result = profesorSchema.safeParse(form)
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {}
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as string
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message
+      }
+      setErrors(fieldErrors)
+      return
+    }
+    setErrors({})
     onSave(form)
     onOpenChange(false)
   }
@@ -89,23 +113,25 @@ export function ProfesorFormDialog({
               <Label htmlFor="prof-nombre">Nombre *</Label>
               <Input
                 id="prof-nombre"
-                required
                 value={form.nombre}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, nombre: e.target.value })
-                }
+                  clearError("nombre")
+                }}
               />
+              {errors.nombre && <p className="text-xs text-destructive mt-1">{errors.nombre}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="prof-apellidos">Apellidos *</Label>
               <Input
                 id="prof-apellidos"
-                required
                 value={form.apellidos}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm({ ...form, apellidos: e.target.value })
-                }
+                  clearError("apellidos")
+                }}
               />
+              {errors.apellidos && <p className="text-xs text-destructive mt-1">{errors.apellidos}</p>}
             </div>
           </div>
           <div className="space-y-1.5">
@@ -113,24 +139,26 @@ export function ProfesorFormDialog({
             <Input
               id="prof-email"
               type="email"
-              required
               value={form.email}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, email: e.target.value })
-              }
+                clearError("email")
+              }}
             />
+            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email}</p>}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="prof-telefono">Teléfono *</Label>
             <Input
               id="prof-telefono"
-              required
               placeholder="611 222 333"
               value={form.telefono}
-              onChange={(e) =>
+              onChange={(e) => {
                 setForm({ ...form, telefono: e.target.value })
-              }
+                clearError("telefono")
+              }}
             />
+            {errors.telefono && <p className="text-xs text-destructive mt-1">{errors.telefono}</p>}
           </div>
           <div className="space-y-1.5">
             <Label>Permisos habilitados *</Label>
@@ -153,9 +181,9 @@ export function ProfesorFormDialog({
                 )
               })}
             </div>
-            {form.permisos_habilitados.length === 0 && (
-              <p className="text-xs text-destructive">
-                Selecciona al menos un permiso.
+            {errors.permisos_habilitados && (
+              <p className="text-xs text-destructive mt-1">
+                {errors.permisos_habilitados}
               </p>
             )}
           </div>
