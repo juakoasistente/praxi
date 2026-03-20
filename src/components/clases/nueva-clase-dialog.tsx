@@ -12,14 +12,25 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ALUMNOS_CLASES, VEHICULOS, type Clase } from "./mock-data"
+import { Combobox } from "@/components/ui/combobox"
+import { MOCK_ALUMNOS } from "@/components/alumnos/mock-data"
+import { MOCK_VEHICULOS } from "@/components/vehiculos/mock-data"
+import { MOCK_PROFESORES } from "@/components/profesores/mock-data"
+import { type Clase } from "./mock-data"
+
+const ALUMNO_OPTIONS = MOCK_ALUMNOS.map((a) => ({
+  value: a.id,
+  label: `${a.nombre} ${a.apellidos}`,
+  sublabel: a.dni,
+}))
+
+const VEHICULO_OPTIONS = MOCK_VEHICULOS
+  .filter((v) => v.estado !== "baja")
+  .map((v) => ({
+    value: v.id,
+    label: `${v.marca} ${v.modelo}`,
+    sublabel: v.matricula,
+  }))
 
 interface NuevaClaseDialogProps {
   open: boolean
@@ -67,7 +78,7 @@ export function NuevaClaseDialog({
 
   const handleSubmit = () => {
     if (!canSubmit) return
-    const alumno = ALUMNOS_CLASES.find((a) => a.id === alumnoId)!
+    const alumno = MOCK_ALUMNOS.find((a) => a.id === alumnoId)!
     const newClase: Clase = {
       id: `c_new_${Date.now()}`,
       profesor_id: profesorId,
@@ -87,42 +98,34 @@ export function NuevaClaseDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nueva clase</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="alumno">Alumno</Label>
-            <Select value={alumnoId} onValueChange={(v) => v && setAlumnoId(v)}>
-              <SelectTrigger id="alumno">
-                <SelectValue placeholder="Seleccionar alumno" />
-              </SelectTrigger>
-              <SelectContent>
-                {ALUMNOS_CLASES.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.nombre} {a.apellidos}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Alumno</Label>
+            <Combobox
+              options={ALUMNO_OPTIONS}
+              value={alumnoId}
+              onValueChange={setAlumnoId}
+              placeholder="Seleccionar alumno"
+              searchPlaceholder="Buscar alumno..."
+              emptyMessage="No se encontró ningún alumno."
+            />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="vehiculo">Vehículo</Label>
-            <Select value={vehiculoId} onValueChange={(v) => v && setVehiculoId(v)}>
-              <SelectTrigger id="vehiculo">
-                <SelectValue placeholder="Seleccionar vehículo" />
-              </SelectTrigger>
-              <SelectContent>
-                {VEHICULOS.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>
-                    {v.modelo} — {v.matricula}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Vehículo</Label>
+            <Combobox
+              options={VEHICULO_OPTIONS}
+              value={vehiculoId}
+              onValueChange={setVehiculoId}
+              placeholder="Seleccionar vehículo"
+              searchPlaceholder="Buscar vehículo..."
+              emptyMessage="No se encontró ningún vehículo."
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

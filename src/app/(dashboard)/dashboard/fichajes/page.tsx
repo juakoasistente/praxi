@@ -372,8 +372,8 @@ export default function FichajesPage() {
       </div>
 
       {/* Tabla de fichajes */}
-      <div className="rounded-lg border">
-        <Table>
+      <div className="rounded-lg border overflow-x-auto">
+        <Table className="min-w-[600px]">
           <TableHeader>
             <TableRow>
               <TableHead>Empleado</TableHead>

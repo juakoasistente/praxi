@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Combobox } from "@/components/ui/combobox"
 import {
   Select,
   SelectContent,
@@ -23,6 +24,13 @@ import {
 import type { Examen, TipoExamen, ResultadoExamen } from "./types"
 import { TIPOS_EXAMEN, TIPO_LABELS, RESULTADOS, RESULTADO_LABELS } from "./types"
 import { examenSchema } from "@/lib/validations/examen"
+import { MOCK_ALUMNOS } from "@/components/alumnos/mock-data"
+
+const ALUMNO_OPTIONS = MOCK_ALUMNOS.map((a) => ({
+  value: a.id,
+  label: `${a.nombre} ${a.apellidos}`,
+  sublabel: a.dni,
+}))
 
 type ExamenFormData = Omit<Examen, "id">
 
@@ -95,7 +103,7 @@ export function ExamenFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Editar examen" : "Nuevo examen"}
@@ -108,15 +116,22 @@ export function ExamenFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="alumno_nombre">Alumno *</Label>
-            <Input
-              id="alumno_nombre"
-              placeholder="Nombre del alumno"
-              value={form.alumno_nombre}
-              onChange={(e) => {
-                setForm({ ...form, alumno_nombre: e.target.value })
+            <Label>Alumno *</Label>
+            <Combobox
+              options={ALUMNO_OPTIONS}
+              value={form.alumno_id}
+              onValueChange={(id) => {
+                const alumno = ALUMNO_OPTIONS.find((a) => a.value === id)
+                setForm({
+                  ...form,
+                  alumno_id: id,
+                  alumno_nombre: alumno?.label ?? "",
+                })
                 clearError("alumno_nombre")
               }}
+              placeholder="Seleccionar alumno"
+              searchPlaceholder="Buscar alumno..."
+              emptyMessage="No se encontró ningún alumno."
             />
             {errors.alumno_nombre && <p className="text-xs text-destructive mt-1">{errors.alumno_nombre}</p>}
           </div>

@@ -301,8 +301,8 @@ export default function VehiculosPage() {
 
       {/* Table */}
       {filtered.length > 0 ? (
-        <div className="rounded-lg border">
-          <Table>
+        <div className="rounded-lg border overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Vehículo</TableHead>
