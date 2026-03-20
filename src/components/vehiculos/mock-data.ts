@@ -1,4 +1,4 @@
-import type { Vehiculo, CosteVehiculo } from "./types"
+import type { Vehiculo, CosteVehiculo, IncidenciaVehiculo } from "./types"
 
 export const MOCK_VEHICULOS: Vehiculo[] = [
   {
@@ -106,4 +106,22 @@ export const MOCK_COSTES: CosteVehiculo[] = [
   { id: "c17", vehiculo_id: "5", concepto: "Cambio de aceite y filtros", importe: 680, fecha: "2025-11-30", categoria: "mantenimiento" },
   // Peugeot 208
   { id: "c18", vehiculo_id: "6", concepto: "Última revisión antes de baja", importe: 150, fecha: "2025-12-01", categoria: "mantenimiento" },
+]
+
+export const MOCK_INCIDENCIAS: IncidenciaVehiculo[] = [
+  // Seat Ibiza
+  { id: "i1", vehiculo_id: "1", descripcion: "Pinchazo rueda delantera derecha en clase", fecha: "2025-10-05", tipo: "pinchazo" },
+  { id: "i2", vehiculo_id: "1", descripcion: "Fallo en luz de freno trasera", fecha: "2026-01-18", tipo: "averia" },
+  // Renault Clio
+  { id: "i3", vehiculo_id: "2", descripcion: "Embrague patina al arrancar en pendiente", fecha: "2025-12-10", tipo: "mecanico" },
+  { id: "i4", vehiculo_id: "2", descripcion: "Golpe en parachoques trasero en maniobra", fecha: "2026-02-22", tipo: "accidente" },
+  { id: "i5", vehiculo_id: "2", descripcion: "Sustitución de limpiaparabrisas desgastados", fecha: "2025-09-15", tipo: "otro" },
+  // Yamaha MT-07
+  { id: "i6", vehiculo_id: "3", descripcion: "Caída en circuito cerrado, arañazos laterales", fecha: "2025-11-20", tipo: "accidente" },
+  { id: "i7", vehiculo_id: "3", descripcion: "Cadena floja detectada en revisión", fecha: "2026-03-05", tipo: "mecanico" },
+  // Honda PCX
+  { id: "i8", vehiculo_id: "4", descripcion: "Sistema eléctrico falla intermitentemente", fecha: "2026-03-08", tipo: "averia" },
+  // MAN TGL
+  { id: "i9", vehiculo_id: "5", descripcion: "Fuga de aceite detectada en revisión", fecha: "2025-11-25", tipo: "mecanico" },
+  { id: "i10", vehiculo_id: "5", descripcion: "Pinchazo en rueda trasera izquierda", fecha: "2026-02-10", tipo: "pinchazo" },
 ]

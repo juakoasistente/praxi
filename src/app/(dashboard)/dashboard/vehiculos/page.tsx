@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, Plus, X, Car } from "lucide-react"
+import { Search, Plus, X, Car, Scale } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -23,11 +23,14 @@ import {
 import { VehiculoFormDialog } from "@/components/vehiculos/vehiculo-form-dialog"
 import { VehiculoDetailSheet } from "@/components/vehiculos/vehiculo-detail-sheet"
 import { CosteFormDialog } from "@/components/vehiculos/coste-form-dialog"
+import { IncidenciaFormDialog } from "@/components/vehiculos/incidencia-form-dialog"
+import { CompararVehiculosDialog } from "@/components/vehiculos/comparar-vehiculos-dialog"
 import { ConfirmarBajaDialog } from "@/components/vehiculos/confirmar-baja-dialog"
-import { MOCK_VEHICULOS, MOCK_COSTES } from "@/components/vehiculos/mock-data"
+import { MOCK_VEHICULOS, MOCK_COSTES, MOCK_INCIDENCIAS } from "@/components/vehiculos/mock-data"
 import type {
   Vehiculo,
   CosteVehiculo,
+  IncidenciaVehiculo,
 } from "@/components/vehiculos/types"
 import {
   TIPO_LABELS,
@@ -47,6 +50,7 @@ function formatCurrency(amount: number) {
 export default function VehiculosPage() {
   const [vehiculos, setVehiculos] = React.useState<Vehiculo[]>(MOCK_VEHICULOS)
   const [costes, setCostes] = React.useState<CosteVehiculo[]>(MOCK_COSTES)
+  const [incidencias, setIncidencias] = React.useState<IncidenciaVehiculo[]>(MOCK_INCIDENCIAS)
   const [search, setSearch] = React.useState("")
   const [filtroTipo, setFiltroTipo] = React.useState<string>("todos")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")
@@ -59,6 +63,8 @@ export default function VehiculosPage() {
   const [bajaVehiculo, setBajaVehiculo] = React.useState<Vehiculo | null>(null)
   const [bajaDialogOpen, setBajaDialogOpen] = React.useState(false)
   const [costeDialogOpen, setCosteDialogOpen] = React.useState(false)
+  const [incidenciaDialogOpen, setIncidenciaDialogOpen] = React.useState(false)
+  const [compararDialogOpen, setCompararDialogOpen] = React.useState(false)
 
   const filtered = React.useMemo(() => {
     return vehiculos.filter((v) => {
@@ -129,6 +135,16 @@ export default function VehiculosPage() {
     setCostes((prev) => [...prev, newCoste])
   }
 
+  function handleSaveIncidencia(data: Omit<IncidenciaVehiculo, "id" | "vehiculo_id">) {
+    if (!detailVehiculo) return
+    const newIncidencia: IncidenciaVehiculo = {
+      ...data,
+      id: String(Date.now()),
+      vehiculo_id: detailVehiculo.id,
+    }
+    setIncidencias((prev) => [...prev, newIncidencia])
+  }
+
   function clearFilters() {
     setSearch("")
     setFiltroTipo("todos")
@@ -150,15 +166,24 @@ export default function VehiculosPage() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setEditingVehiculo(null)
-            setFormOpen(true)
-          }}
-        >
-          <Plus className="size-4" data-icon="inline-start" />
-          Nuevo vehículo
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCompararDialogOpen(true)}
+          >
+            <Scale className="size-4" data-icon="inline-start" />
+            Comparar
+          </Button>
+          <Button
+            onClick={() => {
+              setEditingVehiculo(null)
+              setFormOpen(true)
+            }}
+          >
+            <Plus className="size-4" data-icon="inline-start" />
+            Nuevo vehículo
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -293,14 +318,28 @@ export default function VehiculosPage() {
         onOpenChange={setSheetOpen}
         vehiculo={detailVehiculo}
         costes={costes}
+        incidencias={incidencias}
         onEdit={handleEdit}
         onBaja={handleBaja}
         onAddCoste={() => setCosteDialogOpen(true)}
+        onAddIncidencia={() => setIncidenciaDialogOpen(true)}
       />
       <CosteFormDialog
         open={costeDialogOpen}
         onOpenChange={setCosteDialogOpen}
         onSave={handleSaveCoste}
+      />
+      <IncidenciaFormDialog
+        open={incidenciaDialogOpen}
+        onOpenChange={setIncidenciaDialogOpen}
+        onSave={handleSaveIncidencia}
+      />
+      <CompararVehiculosDialog
+        open={compararDialogOpen}
+        onOpenChange={setCompararDialogOpen}
+        vehiculos={vehiculos}
+        costes={costes}
+        incidencias={incidencias}
       />
       <ConfirmarBajaDialog
         open={bajaDialogOpen}

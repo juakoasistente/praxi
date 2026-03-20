@@ -72,6 +72,34 @@ export const CATEGORIA_COSTE_LABELS: Record<CategoriaCoste, string> = {
   otro: "Otro",
 }
 
+export type TipoIncidencia = "averia" | "accidente" | "pinchazo" | "mecanico" | "otro"
+
+export interface IncidenciaVehiculo {
+  id: string
+  vehiculo_id: string
+  descripcion: string
+  fecha: string
+  tipo: TipoIncidencia
+}
+
+export const TIPO_INCIDENCIA_LABELS: Record<TipoIncidencia, string> = {
+  averia: "Avería",
+  accidente: "Accidente",
+  pinchazo: "Pinchazo",
+  mecanico: "Visita al mecánico",
+  otro: "Otro",
+}
+
+export const TIPO_INCIDENCIA_COLORS: Record<TipoIncidencia, string> = {
+  averia: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  accidente: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  pinchazo: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+  mecanico: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  otro: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+}
+
+export const TIPOS_INCIDENCIA: TipoIncidencia[] = ["averia", "accidente", "pinchazo", "mecanico", "otro"]
+
 export const TIPOS: TipoVehiculo[] = ["turismo", "motocicleta", "camion", "autobus", "furgoneta"]
 export const ESTADOS: EstadoVehiculo[] = ["activo", "en_taller", "baja"]
 export const CATEGORIAS_COSTE: CategoriaCoste[] = [

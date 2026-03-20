@@ -11,12 +11,14 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import type { Vehiculo, CosteVehiculo } from "./types"
+import type { Vehiculo, CosteVehiculo, IncidenciaVehiculo } from "./types"
 import {
   TIPO_LABELS,
   ESTADO_LABELS,
   ESTADO_COLORS,
   CATEGORIA_COSTE_LABELS,
+  TIPO_INCIDENCIA_LABELS,
+  TIPO_INCIDENCIA_COLORS,
 } from "./types"
 
 interface VehiculoDetailSheetProps {
@@ -24,9 +26,11 @@ interface VehiculoDetailSheetProps {
   onOpenChange: (open: boolean) => void
   vehiculo: Vehiculo | null
   costes: CosteVehiculo[]
+  incidencias: IncidenciaVehiculo[]
   onEdit: (vehiculo: Vehiculo) => void
   onBaja: (vehiculo: Vehiculo) => void
   onAddCoste: () => void
+  onAddIncidencia: () => void
 }
 
 function DetailRow({ label, value }: { label: string; value: string | null }) {
@@ -58,9 +62,11 @@ export function VehiculoDetailSheet({
   onOpenChange,
   vehiculo,
   costes,
+  incidencias,
   onEdit,
   onBaja,
   onAddCoste,
+  onAddIncidencia,
 }: VehiculoDetailSheetProps) {
   if (!vehiculo) return null
 
@@ -70,6 +76,10 @@ export function VehiculoDetailSheet({
 
   const totalCostes = vehiculoCostes.reduce((sum, c) => sum + c.importe, 0)
   const costeTotal = vehiculo.precio_adquisicion + totalCostes
+
+  const vehiculoIncidencias = incidencias
+    .filter((i) => i.vehiculo_id === vehiculo.id)
+    .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -167,6 +177,45 @@ export function VehiculoDetailSheet({
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No hay costes registrados.
+              </p>
+            )}
+          </div>
+          <Separator />
+          {/* Incidencias */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold">
+                Incidencias ({vehiculoIncidencias.length})
+              </p>
+              <Button variant="outline" size="sm" onClick={onAddIncidencia}>
+                <Plus className="size-3.5" data-icon="inline-start" />
+                Añadir
+              </Button>
+            </div>
+            {vehiculoIncidencias.length > 0 ? (
+              <div className="space-y-2">
+                {vehiculoIncidencias.map((inc) => (
+                  <div
+                    key={inc.id}
+                    className="rounded-lg border p-2.5 text-sm space-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(inc.fecha)}
+                      </span>
+                      <Badge
+                        className={`border-0 text-xs ${TIPO_INCIDENCIA_COLORS[inc.tipo]}`}
+                      >
+                        {TIPO_INCIDENCIA_LABELS[inc.tipo]}
+                      </Badge>
+                    </div>
+                    <p>{inc.descripcion}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No hay incidencias registradas.
               </p>
             )}
           </div>
