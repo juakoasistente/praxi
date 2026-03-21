@@ -4,24 +4,25 @@ export interface NavItem {
   href: string
   label: string
   icon: string
+  group: string
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "/icons/dashboard.png" },
-  { href: "/dashboard/alumnos", label: "Alumnos", icon: "/icons/alumnos.png" },
-  { href: "/dashboard/profesores", label: "Profesores", icon: "/icons/profesores.png" },
-  { href: "/dashboard/clases", label: "Clases", icon: "/icons/clases.png" },
-  { href: "/dashboard/vehiculos", label: "Vehículos", icon: "/icons/vehiculos.png" },
-  { href: "/dashboard/facturacion", label: "Facturación", icon: "/icons/facturacion.png" },
-  { href: "/dashboard/fichajes", label: "Fichajes", icon: "/icons/fichajes.png" },
-  { href: "/dashboard/examenes", label: "Exámenes", icon: "/icons/examenes.png" },
-  { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox" },
-  { href: "/dashboard/contratos", label: "Contratos", icon: "FileSignature" },
-  { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3" },
-  { href: "/dashboard/informes", label: "Informes", icon: "FileBarChart" },
-  { href: "/dashboard/automatizaciones", label: "Automatizaciones", icon: "Zap" },
-  { href: "/dashboard/dgt", label: "Trámites DGT", icon: "Building2" },
-  { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings" },
+  { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard", group: "Principal" },
+  { href: "/dashboard/alumnos", label: "Alumnos", icon: "Users", group: "Gestión" },
+  { href: "/dashboard/profesores", label: "Profesores", icon: "GraduationCap", group: "Gestión" },
+  { href: "/dashboard/clases", label: "Clases", icon: "Calendar", group: "Gestión" },
+  { href: "/dashboard/vehiculos", label: "Vehículos", icon: "Car", group: "Gestión" },
+  { href: "/dashboard/examenes", label: "Exámenes", icon: "ClipboardCheck", group: "Gestión" },
+  { href: "/dashboard/facturacion", label: "Facturación", icon: "Receipt", group: "Finanzas" },
+  { href: "/dashboard/contratos", label: "Contratos", icon: "FileSignature", group: "Finanzas" },
+  { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox", group: "Comunicación" },
+  { href: "/dashboard/automatizaciones", label: "Automatizaciones", icon: "Zap", group: "Comunicación" },
+  { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3", group: "Análisis" },
+  { href: "/dashboard/informes", label: "Informes", icon: "FileBarChart", group: "Análisis" },
+  { href: "/dashboard/fichajes", label: "Fichajes", icon: "Clock", group: "Administración" },
+  { href: "/dashboard/dgt", label: "Trámites DGT", icon: "Building2", group: "Administración" },
+  { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings", group: "Administración" },
 ]
 
 const ROLE_ROUTES: Record<UserRole, string[]> = {

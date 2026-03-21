@@ -72,7 +72,7 @@ export function NotificationPanel({
   const hayNoLeidas = notifications.some((n) => !n.leida)
 
   return (
-    <div className="w-80 max-h-[28rem] flex flex-col rounded-lg border bg-popover text-popover-foreground shadow-lg">
+    <div className="w-80 sm:w-96 max-h-[70vh] flex flex-col rounded-lg border bg-popover text-popover-foreground shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <h3 className="text-sm font-semibold">Notificaciones</h3>

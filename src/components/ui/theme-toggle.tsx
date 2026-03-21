@@ -21,10 +21,8 @@ export function ThemeToggle() {
     )
   }
 
-  const cycleTheme = () => {
-    if (theme === "light") setTheme("dark")
-    else if (theme === "dark") setTheme("system")
-    else setTheme("light")
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
   }
 
   return (
@@ -32,14 +30,8 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       className="h-8 w-8"
-      onClick={cycleTheme}
-      title={
-        theme === "light"
-          ? "Modo claro"
-          : theme === "dark"
-            ? "Modo oscuro"
-            : "Automático"
-      }
+      onClick={toggleTheme}
+      title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
     >
       {theme === "dark" ? (
         <Moon className="h-4 w-4" />

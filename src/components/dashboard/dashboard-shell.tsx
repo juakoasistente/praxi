@@ -1,24 +1,32 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { useState } from 'react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useState, useEffect } from 'react'
 import { RoleProvider } from '@/components/auth/role-provider'
 import { getNavItems, type UserRole, type NavItem } from '@/lib/permissions'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { OfflineIndicator } from '@/components/pwa/offline-indicator'
-import { BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2 } from 'lucide-react'
+import { LayoutDashboard, Users, GraduationCap, Calendar, Car, Receipt, Clock, ClipboardCheck, BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2, ChevronDown, ChevronRight } from 'lucide-react'
 import { SedeSelector } from '@/components/sedes/sede-selector'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Users,
+  GraduationCap,
+  Calendar,
+  Car,
+  Receipt,
+  Clock,
+  ClipboardCheck,
   BarChart3,
   Settings,
   Inbox,
@@ -44,39 +52,119 @@ function NavLinks({
   pathname: string
   onClick?: () => void
 }) {
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+
+  // Load collapsed state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('collapsed-groups')
+    if (saved) {
+      try {
+        setCollapsedGroups(new Set(JSON.parse(saved)))
+      } catch {
+        // Ignore parsing errors
+      }
+    }
+  }, [])
+
+  // Save to localStorage whenever collapsedGroups changes
+  useEffect(() => {
+    localStorage.setItem('collapsed-groups', JSON.stringify([...collapsedGroups]))
+  }, [collapsedGroups])
+
+  // Group items by group
+  const groupedItems = items.reduce((groups, item) => {
+    const group = item.group
+    if (!groups[group]) {
+      groups[group] = []
+    }
+    groups[group].push(item)
+    return groups
+  }, {} as Record<string, NavItem[]>)
+
+  // Determine if a group should be expanded (contains active route)
+  const getGroupExpanded = (group: string, groupItems: NavItem[]) => {
+    // Principal group is always expanded
+    if (group === 'Principal') return true
+
+    // If any item in the group is active, expand the group
+    const hasActive = groupItems.some(item =>
+      item.href === '/dashboard'
+        ? pathname === '/dashboard'
+        : pathname.startsWith(item.href)
+    )
+
+    if (hasActive) return true
+
+    // Otherwise, check collapsed state
+    return !collapsedGroups.has(group)
+  }
+
+  const toggleGroup = (group: string) => {
+    if (group === 'Principal') return // Principal always expanded
+
+    const newCollapsed = new Set(collapsedGroups)
+    if (newCollapsed.has(group)) {
+      newCollapsed.delete(group)
+    } else {
+      newCollapsed.add(group)
+    }
+    setCollapsedGroups(newCollapsed)
+  }
+
   return (
     <nav className="flex flex-col gap-1">
-      {items.map((item) => {
-        const isActive = item.href === '/dashboard'
-          ? pathname === '/dashboard'
-          : pathname.startsWith(item.href)
+      {Object.entries(groupedItems).map(([group, groupItems]) => {
+        const isExpanded = getGroupExpanded(group, groupItems)
+
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onClick}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
-              isActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
-            }`}
-          >
-            {item.icon.startsWith('/') ? (
-              <Image
-                src={item.icon}
-                alt={item.label}
-                width={20}
-                height={20}
-                className="shrink-0"
-              />
-            ) : (
-              (() => {
-                const Icon = LUCIDE_ICONS[item.icon]
-                return Icon ? <Icon className="size-5 shrink-0" /> : null
-              })()
-            )}
-            {item.label}
-          </Link>
+          <div key={group}>
+            <button
+              onClick={() => toggleGroup(group)}
+              className={`flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 hover:text-sidebar-foreground/80 transition-colors ${
+                group === 'Principal' ? 'cursor-default' : 'cursor-pointer'
+              }`}
+              disabled={group === 'Principal'}
+            >
+              <span>{group}</span>
+              {group !== 'Principal' && (
+                isExpanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronRight className="h-3 w-3" />
+                )
+              )}
+            </button>
+
+            <div className={`transition-all duration-200 overflow-hidden ${
+              isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="space-y-1">
+                {groupItems.map((item) => {
+                  const isActive = item.href === '/dashboard'
+                    ? pathname === '/dashboard'
+                    : pathname.startsWith(item.href)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClick}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                      }`}
+                    >
+                      {(() => {
+                        const Icon = LUCIDE_ICONS[item.icon]
+                        return Icon ? <Icon className="size-5 shrink-0" /> : null
+                      })()}
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
         )
       })}
     </nav>
@@ -93,6 +181,7 @@ export function DashboardShell({
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
 
   const userRole = (user?.rol as UserRole) ?? 'admin'
   const navItems = getNavItems(userRole)
@@ -102,6 +191,15 @@ export function DashboardShell({
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
+  }
+
+  const openLogoutDialog = () => {
+    setLogoutDialogOpen(true)
+  }
+
+  const confirmLogout = () => {
+    setLogoutDialogOpen(false)
+    handleLogout()
   }
 
   const initials = user
@@ -140,9 +238,6 @@ export function DashboardShell({
 
         {/* Nav */}
         <div className="flex-1 overflow-y-auto px-3 py-2">
-          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/40">
-            Menú
-          </p>
           <NavLinks items={navItems} pathname={pathname} />
         </div>
 
@@ -165,8 +260,8 @@ export function DashboardShell({
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 justify-start text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-              onClick={handleLogout}
+              className="flex-1 justify-start text-red-500/70 hover:text-red-500 hover:bg-red-500/10"
+              onClick={openLogoutDialog}
             >
               Cerrar sesión
             </Button>
@@ -220,6 +315,32 @@ export function DashboardShell({
         </main>
         <InstallPrompt />
       </div>
+
+      {/* Logout confirmation dialog */}
+      <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Cerrar sesión?</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que quieres cerrar sesión?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setLogoutDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmLogout}
+            >
+              Cerrar sesión
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
