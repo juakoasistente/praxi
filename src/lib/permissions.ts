@@ -20,7 +20,6 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/automatizaciones", label: "Automatizaciones", icon: "Zap", group: "Comunicación" },
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3", group: "Análisis" },
   { href: "/dashboard/informes", label: "Informes", icon: "FileBarChart", group: "Análisis" },
-  { href: "/dashboard/fichajes", label: "Fichajes", icon: "Clock", group: "Administración" },
   { href: "/dashboard/dgt", label: "Trámites DGT", icon: "Building2", group: "Administración" },
   { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings", group: "Administración" },
 ]
