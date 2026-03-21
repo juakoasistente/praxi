@@ -37,6 +37,7 @@ const EMPTY_FORM: VehiculoFormData = {
   precio_adquisicion: 0,
   estado: "activo",
   notas: null,
+  sede_id: "",
 }
 
 interface VehiculoFormDialogProps {

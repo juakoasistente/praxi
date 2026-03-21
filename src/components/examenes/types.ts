@@ -18,6 +18,7 @@ export interface Examen {
   resultado: ResultadoExamen
   centro_examen: string | null
   notas: string | null
+  sede_id: string
 }
 
 export const TIPO_LABELS: Record<TipoExamen, string> = {

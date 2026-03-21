@@ -16,7 +16,8 @@ export async function getClases(): Promise<Clase[]> {
       hora_inicio,
       hora_fin,
       estado,
-      notas
+      notas,
+      sede_id
     `)
     .order("fecha", { ascending: false })
 
@@ -37,6 +38,7 @@ export async function getClases(): Promise<Clase[]> {
       hora_fin: row.hora_fin as string,
       estado: row.estado as Clase["estado"],
       notas: row.notas as string | null,
+      sede_id: row.sede_id as string,
     }
   })
 }
@@ -55,6 +57,7 @@ export async function createClase(
       hora_fin: clase.hora_fin,
       estado: clase.estado,
       notas: clase.notas,
+      sede_id: clase.sede_id,
     })
     .select(`
       id,
@@ -66,7 +69,8 @@ export async function createClase(
       hora_inicio,
       hora_fin,
       estado,
-      notas
+      notas,
+      sede_id
     `)
     .single()
 

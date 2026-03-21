@@ -40,6 +40,7 @@ import { RequireWrite } from "@/components/auth/require-write"
 import { ExportButton } from "@/components/ui/export-button"
 import { exportToCSV, exportFormatDate } from "@/lib/export"
 import { toast } from "sonner"
+import { useSede } from "@/hooks/use-sede"
 
 function formatTime(isoStr: string) {
   return new Date(isoStr).toLocaleTimeString("es-ES", {
@@ -69,6 +70,7 @@ function isSameDay(d1: Date, d2: Date) {
 export default function FichajesPage() {
   const { data: sbFichajes, loading: loadingFichajes, refetch } = useSupabaseQuery(() => getFichajes())
   const { data: userProfile } = useSupabaseQuery(() => getUserProfile())
+  const { selectedSede } = useSede()
 
   const [fichajes, setFichajes] = React.useState<Fichaje[]>(MOCK_FICHAJES)
 
@@ -173,6 +175,7 @@ export default function FichajesPage() {
           usuario_id: userProfile.id,
           tipo: siguienteTipo,
           metodo: "app",
+          sede_id: selectedSede || "",
         })
         toast.success(`Fichaje de ${siguienteTipo} registrado`)
         refetch()
@@ -186,6 +189,7 @@ export default function FichajesPage() {
           tipo: siguienteTipo,
           timestamp: new Date().toISOString(),
           metodo: "app",
+          sede_id: "1", // Default to Central sede
         }
         setFichajes((prev) => [nuevoFichaje, ...prev])
         toast.success(`Fichaje de ${siguienteTipo} registrado`)

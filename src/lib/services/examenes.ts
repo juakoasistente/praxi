@@ -17,7 +17,8 @@ export async function getExamenes(): Promise<Examen[]> {
       intento,
       resultado,
       centro_examen,
-      notas
+      notas,
+      sede_id
     `)
     .order("fecha_presentacion", { ascending: false })
 
@@ -39,6 +40,7 @@ export async function getExamenes(): Promise<Examen[]> {
       resultado: row.resultado as Examen["resultado"],
       centro_examen: row.centro_examen as string | null,
       notas: row.notas as string | null,
+      sede_id: row.sede_id as string,
     }
   })
 }
@@ -56,6 +58,7 @@ export async function createExamen(
     resultado: examen.resultado,
     centro_examen: examen.centro_examen,
     notas: examen.notas,
+    sede_id: examen.sede_id,
   })
 
   if (error) throw new Error(error.message)
@@ -76,6 +79,7 @@ export async function updateExamen(
   if (updates.centro_examen !== undefined)
     dbUpdates.centro_examen = updates.centro_examen
   if (updates.notas !== undefined) dbUpdates.notas = updates.notas
+  if (updates.sede_id !== undefined) dbUpdates.sede_id = updates.sede_id
 
   const { error } = await supabase
     .from("expediente_examen")

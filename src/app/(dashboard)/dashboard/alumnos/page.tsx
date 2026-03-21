@@ -39,6 +39,8 @@ import {
   PERMISOS,
   ESTADOS,
 } from "@/components/alumnos/types"
+import { useSede } from "@/hooks/use-sede"
+import { SEDE_ALL_OPTION } from "@/components/sedes/types"
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-ES", {
@@ -51,6 +53,7 @@ function formatDate(dateStr: string) {
 export default function AlumnosPage() {
   const { data: supabaseAlumnos, loading, error, refetch } = useSupabaseQuery(() => getAlumnos())
   const [alumnos, setAlumnos] = React.useState<Alumno[]>(MOCK_ALUMNOS)
+  const { selectedSede } = useSede()
 
   // Sync supabase data when available
   React.useEffect(() => {
@@ -77,9 +80,10 @@ export default function AlumnosPage() {
         a.dni.toLowerCase().includes(search.toLowerCase())
       const matchEstado = filtroEstado === "todos" || a.estado === filtroEstado
       const matchPermiso = filtroPermiso === "todos" || a.permiso === filtroPermiso
-      return matchSearch && matchEstado && matchPermiso
+      const matchSede = selectedSede === SEDE_ALL_OPTION || a.sede_id === selectedSede
+      return matchSearch && matchEstado && matchPermiso && matchSede
     })
-  }, [alumnos, search, filtroEstado, filtroPermiso])
+  }, [alumnos, search, filtroEstado, filtroPermiso, selectedSede])
 
   const hasActiveFilters = search || filtroEstado !== "todos" || filtroPermiso !== "todos"
 

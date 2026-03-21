@@ -10,4 +10,5 @@ export interface Fichaje {
   tipo: TipoFichaje
   timestamp: string // ISO string
   metodo: MetodoFichaje
+  sede_id: string
 }

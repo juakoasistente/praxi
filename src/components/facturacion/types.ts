@@ -41,6 +41,7 @@ export interface Factura {
   metodo_pago: MetodoPago | null
   fecha_pago: string | null
   notas: string | null
+  sede_id: string
 }
 
 export const ESTADO_FACTURA_LABELS: Record<EstadoFactura, string> = {

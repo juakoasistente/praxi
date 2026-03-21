@@ -38,6 +38,7 @@ const EMPTY_FORM: AlumnoFormData = {
   estado: "matriculado",
   fecha_matricula: new Date().toISOString().split("T")[0],
   notas: null,
+  sede_id: "1", // Default to Central sede
 }
 
 interface AlumnoFormDialogProps {

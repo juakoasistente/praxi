@@ -28,6 +28,7 @@ const EMPTY_FORM: ProfesorFormData = {
   telefono: "",
   permisos_habilitados: ["B"],
   activo: true,
+  sedes: [],
 }
 
 interface ProfesorFormDialogProps {

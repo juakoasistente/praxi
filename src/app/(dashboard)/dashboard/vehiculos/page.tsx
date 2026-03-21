@@ -55,6 +55,8 @@ import { ExportButton } from "@/components/ui/export-button"
 import { exportToCSV, exportFormatCurrency } from "@/lib/export"
 import type { EstadoVehiculo, TipoVehiculo } from "@/components/vehiculos/types"
 import { toast } from "sonner"
+import { useSede } from "@/hooks/use-sede"
+import { SEDE_ALL_OPTION } from "@/components/sedes/types"
 
 function formatCurrency(amount: number) {
   return amount.toLocaleString("es-ES", {
@@ -67,6 +69,7 @@ export default function VehiculosPage() {
   const { data: sbVehiculos, loading: loadingV, refetch: refetchV } = useSupabaseQuery(() => getVehiculos())
   const { data: sbCostes, loading: loadingC, refetch: refetchC } = useSupabaseQuery(() => getAllCostes())
   const { data: sbIncidencias, loading: loadingI, refetch: refetchI } = useSupabaseQuery(() => getAllIncidencias())
+  const { selectedSede } = useSede()
 
   const [vehiculos, setVehiculos] = React.useState<Vehiculo[]>(MOCK_VEHICULOS)
   const [costes, setCostes] = React.useState<CosteVehiculo[]>(MOCK_COSTES)
@@ -101,9 +104,10 @@ export default function VehiculosPage() {
         v.matricula.toLowerCase().includes(search.toLowerCase())
       const matchTipo = filtroTipo === "todos" || v.tipo === filtroTipo
       const matchEstado = filtroEstado === "todos" || v.estado === filtroEstado
-      return matchSearch && matchTipo && matchEstado
+      const matchSede = selectedSede === SEDE_ALL_OPTION || v.sede_id === selectedSede
+      return matchSearch && matchTipo && matchEstado && matchSede
     })
-  }, [vehiculos, search, filtroTipo, filtroEstado])
+  }, [vehiculos, search, filtroTipo, filtroEstado, selectedSede])
 
   const hasActiveFilters = search || filtroTipo !== "todos" || filtroEstado !== "todos"
 

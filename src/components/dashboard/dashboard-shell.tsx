@@ -16,6 +16,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { OfflineIndicator } from '@/components/pwa/offline-indicator'
 import { BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2 } from 'lucide-react'
+import { SedeSelector } from '@/components/sedes/sede-selector'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
@@ -132,6 +133,11 @@ export function DashboardShell({
           <NotificationBell />
         </div>
 
+        {/* Sede Selector */}
+        <div className="px-3 pb-2">
+          <SedeSelector />
+        </div>
+
         {/* Nav */}
         <div className="flex-1 overflow-y-auto px-3 py-2">
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/40">
@@ -189,6 +195,9 @@ export function DashboardShell({
                   <span className="text-sm font-bold text-sidebar-primary-foreground">P</span>
                 </div>
                 <span className="text-lg font-bold tracking-tight">Praxi</span>
+              </div>
+              <div className="px-3 pb-2">
+                <SedeSelector />
               </div>
               <div className="px-3">
                 <NavLinks

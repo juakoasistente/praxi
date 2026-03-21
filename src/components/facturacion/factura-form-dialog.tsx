@@ -61,6 +61,7 @@ const EMPTY_FORM: FacturaFormData = {
   numero: "",
   alumno_id: "",
   alumno_nombre: "",
+  sede_id: "",
   fecha_emision: new Date().toISOString().split("T")[0],
   fecha_vencimiento: "",
   lineas: [],

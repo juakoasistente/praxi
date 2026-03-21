@@ -16,6 +16,7 @@ export interface Vehiculo {
   precio_adquisicion: number
   estado: EstadoVehiculo
   notas: string | null
+  sede_id: string | null
 }
 
 export type CategoriaCoste =

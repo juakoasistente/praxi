@@ -15,7 +15,8 @@ export async function getFichajes(): Promise<Fichaje[]> {
       ),
       tipo,
       timestamp,
-      metodo
+      metodo,
+      sede_id
     `)
     .order("timestamp", { ascending: false })
 
@@ -35,6 +36,7 @@ export async function getFichajes(): Promise<Fichaje[]> {
       tipo: row.tipo as Fichaje["tipo"],
       timestamp: row.timestamp as string,
       metodo: row.metodo as Fichaje["metodo"],
+      sede_id: row.sede_id as string,
     }
   })
 }
@@ -43,11 +45,13 @@ export async function createFichaje(fichaje: {
   usuario_id: string
   tipo: Fichaje["tipo"]
   metodo?: Fichaje["metodo"]
+  sede_id: string
 }): Promise<void> {
   const { error } = await supabase.from("fichaje").insert({
     usuario_id: fichaje.usuario_id,
     tipo: fichaje.tipo,
     metodo: fichaje.metodo ?? "manual",
+    sede_id: fichaje.sede_id,
   })
 
   if (error) throw new Error(error.message)

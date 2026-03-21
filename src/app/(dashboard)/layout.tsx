@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardShell } from '@/components/dashboard/dashboard-shell'
+import { SedeProvider } from '@/hooks/use-sede'
 
 export default async function DashboardLayout({
   children,
@@ -24,6 +25,8 @@ export default async function DashboardLayout({
     .single()
 
   return (
-    <DashboardShell user={profile}>{children}</DashboardShell>
+    <SedeProvider>
+      <DashboardShell user={profile}>{children}</DashboardShell>
+    </SedeProvider>
   )
 }

@@ -91,6 +91,7 @@ export function NuevaClaseDialog({
       hora_fin: horaFin,
       estado: "programada",
       notas: notas || null,
+      sede_id: alumno.sede_id,
     }
     onAdd(newClase)
     onOpenChange(false)

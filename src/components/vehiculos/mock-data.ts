@@ -1,6 +1,7 @@
 import type { Vehiculo, CosteVehiculo, IncidenciaVehiculo } from "./types"
 
 export const MOCK_VEHICULOS: Vehiculo[] = [
+  // SEDE CENTRAL - 2 vehículos
   {
     id: "1",
     marca: "Seat",
@@ -13,6 +14,7 @@ export const MOCK_VEHICULOS: Vehiculo[] = [
     precio_adquisicion: 18500,
     estado: "activo",
     notas: "Vehículo principal para clases de permiso B. Doble mando instalado.",
+    sede_id: "1",
   },
   {
     id: "2",
@@ -26,7 +28,9 @@ export const MOCK_VEHICULOS: Vehiculo[] = [
     precio_adquisicion: 16800,
     estado: "activo",
     notas: "Segundo turismo. Revisión de embrague pendiente.",
+    sede_id: "1",
   },
+  // SEDE CHAMBERÍ - 2 vehículos
   {
     id: "3",
     marca: "Yamaha",
@@ -39,19 +43,7 @@ export const MOCK_VEHICULOS: Vehiculo[] = [
     precio_adquisicion: 7900,
     estado: "activo",
     notas: "Para clases de permiso A2. Buen estado general.",
-  },
-  {
-    id: "4",
-    marca: "Honda",
-    modelo: "PCX 125",
-    matricula: "3456 MNP",
-    tipo: "motocicleta",
-    año: 2023,
-    km_actuales: 8300,
-    fecha_adquisicion: "2023-05-01",
-    precio_adquisicion: 3800,
-    estado: "en_taller",
-    notas: "En taller por avería en el sistema eléctrico.",
+    sede_id: "2",
   },
   {
     id: "5",
@@ -65,7 +57,9 @@ export const MOCK_VEHICULOS: Vehiculo[] = [
     precio_adquisicion: 45000,
     estado: "activo",
     notas: "Para clases de permiso C. ITV pasada en enero 2026.",
+    sede_id: "2",
   },
+  // SEDE GETAFE - 1 vehículo
   {
     id: "6",
     marca: "Peugeot",
@@ -78,6 +72,22 @@ export const MOCK_VEHICULOS: Vehiculo[] = [
     precio_adquisicion: 14200,
     estado: "baja",
     notas: "Dado de baja por alto kilometraje. Vendido en diciembre 2025.",
+    sede_id: "3",
+  },
+  // EN TALLER - sin sede
+  {
+    id: "4",
+    marca: "Honda",
+    modelo: "PCX 125",
+    matricula: "3456 MNP",
+    tipo: "motocicleta",
+    año: 2023,
+    km_actuales: 8300,
+    fecha_adquisicion: "2023-05-01",
+    precio_adquisicion: 3800,
+    estado: "en_taller",
+    notas: "En taller por avería en el sistema eléctrico.",
+    sede_id: null,
   },
 ]
 

@@ -1,5 +1,22 @@
 import type { Factura, PagoFactura } from "./types"
 
+// Helper: map alumno_id to sede_id
+function getSedeForAlumno(alumnoId: string): string {
+  const sedeMapping: Record<string, string> = {
+    "1": "1", // María -> Sede Central
+    "2": "1", // Juan -> Sede Central
+    "5": "1", // Laura -> Sede Central
+    "8": "1", // Diego -> Sede Central
+    "3": "2", // Ana -> Sede Chamberí
+    "4": "2", // Carlos -> Sede Chamberí
+    "7": "2", // Sofía -> Sede Chamberí
+    "6": "3", // Pedro -> Sede Getafe
+    "9": "3", // Elena -> Sede Getafe
+    "10": "3", // Alejandro -> Sede Getafe
+  }
+  return sedeMapping[alumnoId] || "1"
+}
+
 export const MOCK_FACTURAS: Factura[] = [
   {
     id: "1",
@@ -31,6 +48,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "tarjeta",
     fecha_pago: "2025-09-12",
     notas: null,
+    sede_id: "1",
   },
   {
     id: "2",
@@ -54,6 +72,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "transferencia",
     fecha_pago: "2025-06-22",
     notas: null,
+    sede_id: "1",
   },
   {
     id: "3",
@@ -85,6 +104,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: "Pendiente de pago antes del examen.",
+    sede_id: "1",
   },
   {
     id: "4",
@@ -108,6 +128,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "efectivo",
     fecha_pago: "2026-01-15",
     notas: "Pagado en efectivo al matricularse.",
+    sede_id: "2",
   },
   {
     id: "5",
@@ -147,6 +168,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "domiciliacion",
     fecha_pago: "2025-02-05",
     notas: null,
+    sede_id: "2",
   },
   {
     id: "6",
@@ -178,6 +200,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "tarjeta",
     fecha_pago: null,
     notas: "Pagado 400€ de 700€. Pendiente resto.",
+    sede_id: "1",
   },
   {
     id: "7",
@@ -209,6 +232,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: null,
+    sede_id: "2",
   },
   {
     id: "8",
@@ -232,6 +256,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: "Vencida. Contactar alumno para gestionar pago.",
+    sede_id: "1",
   },
   {
     id: "9",
@@ -255,6 +280,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: null,
+    sede_id: "3",
   },
   {
     id: "10",
@@ -286,6 +312,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: "transferencia",
     fecha_pago: null,
     notas: "Pagado 500€. Pendiente 350€.",
+    sede_id: "3",
   },
   {
     id: "11",
@@ -309,6 +336,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: "Anulada por baja voluntaria del alumno.",
+    sede_id: "3",
   },
   {
     id: "12",
@@ -340,6 +368,7 @@ export const MOCK_FACTURAS: Factura[] = [
     metodo_pago: null,
     fecha_pago: null,
     notas: null,
+    sede_id: "1",
   },
 ]
 

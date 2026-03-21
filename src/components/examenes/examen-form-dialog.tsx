@@ -45,6 +45,7 @@ const EMPTY_FORM: ExamenFormData = {
   resultado: "pendiente",
   centro_examen: null,
   notas: null,
+  sede_id: "1", // Default to Central sede
 }
 
 interface ExamenFormDialogProps {

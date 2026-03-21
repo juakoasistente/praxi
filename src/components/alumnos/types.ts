@@ -21,6 +21,7 @@ export interface Alumno {
   estado: EstadoAlumno
   fecha_matricula: string
   notas: string | null
+  sede_id: string
 }
 
 export const ESTADO_LABELS: Record<EstadoAlumno, string> = {

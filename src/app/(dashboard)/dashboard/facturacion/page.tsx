@@ -38,6 +38,8 @@ import { ExportButton } from "@/components/ui/export-button"
 import { exportToCSV, exportFormatDate, exportFormatCurrency } from "@/lib/export"
 import type { EstadoFactura } from "@/components/facturacion/types"
 import { toast } from "sonner"
+import { useSede } from "@/hooks/use-sede"
+import { SEDE_ALL_OPTION } from "@/components/sedes/types"
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-ES", {

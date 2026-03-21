@@ -6,4 +6,5 @@ export interface Profesor {
   telefono: string
   permisos_habilitados: string[]
   activo: boolean
+  sedes: string[] // array of sede_ids (N:M relationship)
 }

@@ -1,5 +1,22 @@
 import type { Examen } from "./types"
 
+// Helper: map alumno_id to sede_id
+function getSedeForAlumno(alumnoId: string): string {
+  const sedeMapping: Record<string, string> = {
+    "1": "1", // María -> Sede Central
+    "2": "1", // Juan -> Sede Central
+    "5": "1", // Laura -> Sede Central
+    "8": "1", // Diego -> Sede Central
+    "3": "2", // Ana -> Sede Chamberí
+    "4": "2", // Carlos -> Sede Chamberí
+    "7": "2", // Sofía -> Sede Chamberí
+    "6": "3", // Pedro -> Sede Getafe
+    "9": "3", // Elena -> Sede Getafe
+    "10": "3", // Alejandro -> Sede Getafe
+  }
+  return sedeMapping[alumnoId] || "1"
+}
+
 export const MOCK_EXAMENES: Examen[] = [
   {
     id: "1",
@@ -13,6 +30,7 @@ export const MOCK_EXAMENES: Examen[] = [
     resultado: "aprobado",
     centro_examen: "DGT Madrid - Arturo Soria",
     notas: "Aprobó con buena nota.",
+    sede_id: getSedeForAlumno("1"),
   },
   {
     id: "2",
@@ -26,6 +44,7 @@ export const MOCK_EXAMENES: Examen[] = [
     resultado: "pendiente",
     centro_examen: "DGT Madrid - Arturo Soria",
     notas: null,
+    sede_id: getSedeForAlumno("1"),
   },
   {
     id: "3",
@@ -37,8 +56,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Noviembre 2025 - Teórico",
     intento: 1,
     resultado: "aprobado",
-    centro_examen: "DGT Sevilla",
+    centro_examen: "DGT Madrid - Arturo Soria",
     notas: "Primera convocatoria, aprobó a la primera.",
+    sede_id: getSedeForAlumno("2"),
   },
   {
     id: "4",
@@ -50,8 +70,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Marzo 2026 - Práctico",
     intento: 1,
     resultado: "pendiente",
-    centro_examen: "DGT Sevilla",
+    centro_examen: "DGT Madrid - Arturo Soria",
     notas: null,
+    sede_id: getSedeForAlumno("2"),
   },
   {
     id: "5",
@@ -63,8 +84,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Abril 2025 - Teórico",
     intento: 1,
     resultado: "suspendido",
-    centro_examen: "DGT Madrid - Arturo Soria",
+    centro_examen: "DGT Madrid - Chamberí",
     notas: "Falló en señales de tráfico.",
+    sede_id: getSedeForAlumno("4"),
   },
   {
     id: "6",
@@ -76,8 +98,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Junio 2025 - Teórico",
     intento: 2,
     resultado: "aprobado",
-    centro_examen: "DGT Madrid - Arturo Soria",
+    centro_examen: "DGT Madrid - Chamberí",
     notas: "Segundo intento, aprobado.",
+    sede_id: getSedeForAlumno("4"),
   },
   {
     id: "7",
@@ -89,8 +112,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Septiembre 2025 - Práctico",
     intento: 1,
     resultado: "aprobado",
-    centro_examen: "DGT Madrid - Arturo Soria",
+    centro_examen: "DGT Madrid - Chamberí",
     notas: "Excelente conducción.",
+    sede_id: getSedeForAlumno("4"),
   },
   {
     id: "8",
@@ -104,6 +128,7 @@ export const MOCK_EXAMENES: Examen[] = [
     resultado: "aprobado",
     centro_examen: "DGT Madrid - Arturo Soria",
     notas: null,
+    sede_id: getSedeForAlumno("5"),
   },
   {
     id: "9",
@@ -117,6 +142,7 @@ export const MOCK_EXAMENES: Examen[] = [
     resultado: "suspendido",
     centro_examen: "DGT Madrid - Arturo Soria",
     notas: "Error en maniobra de aparcamiento.",
+    sede_id: getSedeForAlumno("5"),
   },
   {
     id: "10",
@@ -130,6 +156,7 @@ export const MOCK_EXAMENES: Examen[] = [
     resultado: "aprobado",
     centro_examen: "DGT Madrid - Arturo Soria",
     notas: "Aprobó en el segundo intento.",
+    sede_id: getSedeForAlumno("5"),
   },
   {
     id: "11",
@@ -141,8 +168,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Enero 2026 - Teórico",
     intento: 1,
     resultado: "aprobado",
-    centro_examen: "DGT Barcelona",
+    centro_examen: "DGT Madrid - Chamberí",
     notas: null,
+    sede_id: getSedeForAlumno("7"),
   },
   {
     id: "12",
@@ -154,8 +182,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Febrero 2026 - Teórico",
     intento: 1,
     resultado: "suspendido",
-    centro_examen: "DGT Sevilla",
+    centro_examen: "DGT Madrid - Arturo Soria",
     notas: "Necesita repasar normativa de carga.",
+    sede_id: getSedeForAlumno("8"),
   },
   {
     id: "13",
@@ -167,8 +196,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Marzo 2026 - Teórico",
     intento: 2,
     resultado: "pendiente",
-    centro_examen: "DGT Sevilla",
+    centro_examen: "DGT Madrid - Arturo Soria",
     notas: null,
+    sede_id: getSedeForAlumno("8"),
   },
   {
     id: "14",
@@ -180,8 +210,9 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Diciembre 2025 - Teórico",
     intento: 1,
     resultado: "aprobado",
-    centro_examen: "DGT Sevilla",
+    centro_examen: "DGT Getafe",
     notas: "Permiso D, aprobó teórico específico.",
+    sede_id: getSedeForAlumno("10"),
   },
   {
     id: "15",
@@ -193,7 +224,8 @@ export const MOCK_EXAMENES: Examen[] = [
     convocatoria: "Abril 2026 - Teórico",
     intento: 1,
     resultado: "pendiente",
-    centro_examen: "DGT Madrid - Arturo Soria",
+    centro_examen: "DGT Madrid - Chamberí",
     notas: null,
+    sede_id: getSedeForAlumno("3"),
   },
 ]

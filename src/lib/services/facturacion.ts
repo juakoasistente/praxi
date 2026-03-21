@@ -18,6 +18,7 @@ export async function getFacturas(): Promise<Factura[]> {
       metodo_pago,
       fecha_pago,
       notas,
+      sede_id,
       lineas:linea_factura (
         id,
         concepto,
@@ -48,6 +49,7 @@ export async function getFacturas(): Promise<Factura[]> {
       metodo_pago: row.metodo_pago as Factura["metodo_pago"],
       fecha_pago: row.fecha_pago as string | null,
       notas: row.notas as string | null,
+      sede_id: row.sede_id as string,
     }
   })
 }
@@ -71,6 +73,7 @@ export async function createFactura(
       metodo_pago: factura.metodo_pago,
       fecha_pago: factura.fecha_pago,
       notas: factura.notas,
+      sede_id: factura.sede_id,
     })
     .select("id")
     .single()

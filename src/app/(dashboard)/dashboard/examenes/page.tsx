@@ -46,6 +46,8 @@ import {
   updateExamen,
   deleteExamen as deleteExamenService,
 } from "@/lib/services/examenes"
+import { useSede } from "@/hooks/use-sede"
+import { SEDE_ALL_OPTION } from "@/components/sedes/types"
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-ES", {
@@ -58,6 +60,7 @@ function formatDate(dateStr: string) {
 export default function ExamenesPage() {
   const { data: sbExamenes, loading, refetch } = useSupabaseQuery(() => getExamenes())
   const [examenes, setExamenes] = React.useState<Examen[]>(MOCK_EXAMENES)
+  const { selectedSede } = useSede()
 
   React.useEffect(() => {
     if (sbExamenes) setExamenes(sbExamenes)
@@ -80,9 +83,10 @@ export default function ExamenesPage() {
         e.alumno_nombre.toLowerCase().includes(search.toLowerCase())
       const matchTipo = filtroTipo === "todos" || e.tipo === filtroTipo
       const matchResultado = filtroResultado === "todos" || e.resultado === filtroResultado
-      return matchSearch && matchTipo && matchResultado
+      const matchSede = selectedSede === SEDE_ALL_OPTION || e.sede_id === selectedSede
+      return matchSearch && matchTipo && matchResultado && matchSede
     })
-  }, [examenes, search, filtroTipo, filtroResultado])
+  }, [examenes, search, filtroTipo, filtroResultado, selectedSede])
 
   const hasActiveFilters = search || filtroTipo !== "todos" || filtroResultado !== "todos"
 
