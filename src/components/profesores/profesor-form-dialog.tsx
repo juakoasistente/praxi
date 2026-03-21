@@ -16,10 +16,31 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { X } from "lucide-react"
 import type { Profesor, TipoClaseProfesor, DiaSemana, FranjaHoraria } from "./types"
 import { TIPO_CLASE_LABELS, DIAS_SEMANA, DIA_LABELS } from "./types"
+import { MOCK_SEDES } from "@/components/sedes/mock-data"
 import { profesorSchema } from "@/lib/validations/profesor"
 
+function generateTimeOptions(): string[] {
+  const options: string[] = []
+  for (let h = 7; h <= 22; h++) {
+    for (let m = 0; m < 60; m += 15) {
+      if (h === 22 && m > 0) break
+      options.push(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`)
+    }
+  }
+  return options
+}
+
+const TIME_OPTIONS = generateTimeOptions()
 const ALL_PERMISOS = ["AM", "A1", "A2", "A", "B", "C", "D"]
 
 type ProfesorFormData = Omit<Profesor, "id">
@@ -92,28 +113,32 @@ export function ProfesorFormDialog({
     clearError("permisos_habilitados")
   }
 
-  function toggleDiaHorario(dia: DiaSemana) {
-    const existingIndex = form.horario.findIndex((h) => h.dia === dia)
-    if (existingIndex >= 0) {
-      // Remove the day
-      setForm((prev) => ({
-        ...prev,
-        horario: prev.horario.filter((h) => h.dia !== dia),
-      }))
-    } else {
-      // Add the day with default hours
-      setForm((prev) => ({
-        ...prev,
-        horario: [...prev.horario, { dia, hora_inicio: "09:00", hora_fin: "14:00" }],
-      }))
+  function addFranja() {
+    const newFranja: FranjaHoraria = {
+      id: String(Date.now()) + Math.random(),
+      dia: "lunes",
+      sede_id: MOCK_SEDES[0].id,
+      hora_inicio: "09:00",
+      hora_fin: "14:00",
     }
+    setForm((prev) => ({
+      ...prev,
+      horario: [...prev.horario, newFranja],
+    }))
   }
 
-  function updateHorario(dia: DiaSemana, field: "hora_inicio" | "hora_fin", value: string) {
+  function removeFranja(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      horario: prev.horario.filter((h) => h.id !== id),
+    }))
+  }
+
+  function updateFranja(id: string, field: keyof FranjaHoraria, value: string) {
     setForm((prev) => ({
       ...prev,
       horario: prev.horario.map((h) =>
-        h.dia === dia ? { ...h, [field]: value } : h
+        h.id === id ? { ...h, [field]: value } : h
       ),
     }))
   }
@@ -265,46 +290,108 @@ export function ProfesorFormDialog({
           </div>
 
           <div className="space-y-3">
-            <Label>Horario de prácticas</Label>
-            <div className="space-y-2">
-              {DIAS_SEMANA.map((dia) => {
-                const franjaHoraria = form.horario.find((h) => h.dia === dia)
-                const enabled = !!franjaHoraria
-                return (
-                  <div key={dia} className="grid grid-cols-12 gap-3 items-center">
-                    <div className="col-span-3 flex items-center space-x-2">
-                      <Checkbox
-                        id={`dia-${dia}`}
-                        checked={enabled}
-                        onCheckedChange={() => toggleDiaHorario(dia)}
-                      />
-                      <Label htmlFor={`dia-${dia}`} className="text-sm cursor-pointer">
-                        {DIA_LABELS[dia]}
-                      </Label>
-                    </div>
-                    <div className="col-span-4">
-                      <Input
-                        type="time"
-                        value={franjaHoraria?.hora_inicio || "09:00"}
-                        onChange={(e) => updateHorario(dia, "hora_inicio", e.target.value)}
-                        disabled={!enabled}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                    <div className="col-span-1 text-center text-xs text-muted-foreground">-</div>
-                    <div className="col-span-4">
-                      <Input
-                        type="time"
-                        value={franjaHoraria?.hora_fin || "14:00"}
-                        onChange={(e) => updateHorario(dia, "hora_fin", e.target.value)}
-                        disabled={!enabled}
-                        className="h-8 text-xs"
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="flex items-center justify-between">
+              <Label>Horario de prácticas</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addFranja}
+                className="text-xs"
+              >
+                + Añadir franja
+              </Button>
             </div>
+            {form.horario.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay horario definido</p>
+            ) : (
+              <div className="space-y-2">
+                {form.horario.map((franja) => {
+                  const isValidTime = franja.hora_fin > franja.hora_inicio
+                  return (
+                    <div key={franja.id} className="flex flex-wrap gap-2 items-center p-3 border rounded-lg">
+                      <div className="flex-1 min-w-20">
+                        <Select
+                          value={franja.dia}
+                          onValueChange={(value) => value && updateFranja(franja.id, "dia", value)}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DIAS_SEMANA.map((dia) => (
+                              <SelectItem key={dia} value={dia}>
+                                {DIA_LABELS[dia]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1 min-w-32">
+                        <Select
+                          value={franja.sede_id}
+                          onValueChange={(value) => value && updateFranja(franja.id, "sede_id", value)}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {MOCK_SEDES.filter(s => s.activa).map((sede) => (
+                              <SelectItem key={sede.id} value={sede.id}>
+                                {sede.nombre.replace(" - ", " ")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1 min-w-20">
+                        <Select
+                          value={franja.hora_inicio}
+                          onValueChange={(value) => value && updateFranja(franja.id, "hora_inicio", value)}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TIME_OPTIONS.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1 min-w-20">
+                        <Select
+                          value={franja.hora_fin}
+                          onValueChange={(value) => value && updateFranja(franja.id, "hora_fin", value)}
+                        >
+                          <SelectTrigger className={`h-8 text-xs ${!isValidTime ? "border-red-500" : ""}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TIME_OPTIONS.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFranja(franja.id)}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>

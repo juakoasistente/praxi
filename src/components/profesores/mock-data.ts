@@ -12,9 +12,9 @@ export const MOCK_PROFESORES: Profesor[] = [
     sedes: ["1", "2"], // Central y Chamberí
     tipo_clase: "ambos",
     horario: [
-      { dia: "lunes", hora_inicio: "09:00", hora_fin: "14:00" },
-      { dia: "martes", hora_inicio: "09:00", hora_fin: "14:00" },
-      { dia: "miercoles", hora_inicio: "16:00", hora_fin: "20:00" },
+      { id: "1-1", dia: "lunes", hora_inicio: "09:00", hora_fin: "14:00", sede_id: "1" },
+      { id: "1-2", dia: "martes", hora_inicio: "09:00", hora_fin: "14:00", sede_id: "1" },
+      { id: "1-3", dia: "miercoles", hora_inicio: "16:00", hora_fin: "20:00", sede_id: "2" },
     ],
   },
   {
@@ -28,9 +28,9 @@ export const MOCK_PROFESORES: Profesor[] = [
     sedes: ["2", "3"], // Chamberí y Getafe
     tipo_clase: "practico",
     horario: [
-      { dia: "lunes", hora_inicio: "10:00", hora_fin: "15:00" },
-      { dia: "miercoles", hora_inicio: "10:00", hora_fin: "15:00" },
-      { dia: "viernes", hora_inicio: "10:00", hora_fin: "15:00" },
+      { id: "2-1", dia: "lunes", hora_inicio: "10:00", hora_fin: "15:00", sede_id: "2" },
+      { id: "2-2", dia: "miercoles", hora_inicio: "10:00", hora_fin: "15:00", sede_id: "2" },
+      { id: "2-3", dia: "viernes", hora_inicio: "10:00", hora_fin: "15:00", sede_id: "3" },
     ],
   },
   {
@@ -44,9 +44,9 @@ export const MOCK_PROFESORES: Profesor[] = [
     sedes: ["1"], // Solo Central
     tipo_clase: "teorico",
     horario: [
-      { dia: "martes", hora_inicio: "16:00", hora_fin: "20:00" },
-      { dia: "jueves", hora_inicio: "16:00", hora_fin: "20:00" },
-      { dia: "sabado", hora_inicio: "09:00", hora_fin: "13:00" },
+      { id: "3-1", dia: "martes", hora_inicio: "16:00", hora_fin: "20:00", sede_id: "1" },
+      { id: "3-2", dia: "jueves", hora_inicio: "16:00", hora_fin: "20:00", sede_id: "1" },
+      { id: "3-3", dia: "sabado", hora_inicio: "09:00", hora_fin: "13:00", sede_id: "1" },
     ],
   },
   {
@@ -72,10 +72,10 @@ export const MOCK_PROFESORES: Profesor[] = [
     sedes: ["1", "2", "3"], // Todas las sedes
     tipo_clase: "practico",
     horario: [
-      { dia: "lunes", hora_inicio: "15:00", hora_fin: "19:00" },
-      { dia: "martes", hora_inicio: "15:00", hora_fin: "19:00" },
-      { dia: "jueves", hora_inicio: "09:00", hora_fin: "13:00" },
-      { dia: "viernes", hora_inicio: "09:00", hora_fin: "13:00" },
+      { id: "5-1", dia: "lunes", hora_inicio: "15:00", hora_fin: "19:00", sede_id: "1" },
+      { id: "5-2", dia: "martes", hora_inicio: "15:00", hora_fin: "19:00", sede_id: "2" },
+      { id: "5-3", dia: "jueves", hora_inicio: "09:00", hora_fin: "13:00", sede_id: "3" },
+      { id: "5-4", dia: "viernes", hora_inicio: "09:00", hora_fin: "13:00", sede_id: "1" },
     ],
   },
 ]

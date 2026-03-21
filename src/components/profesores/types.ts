@@ -3,9 +3,11 @@ export type TipoClaseProfesor = "teorico" | "practico" | "ambos"
 export type DiaSemana = "lunes" | "martes" | "miercoles" | "jueves" | "viernes" | "sabado"
 
 export interface FranjaHoraria {
+  id: string
   dia: DiaSemana
-  hora_inicio: string // "09:00"
-  hora_fin: string // "14:00"
+  hora_inicio: string // "09:00", "09:15", "09:30", "09:45" etc.
+  hora_fin: string // "14:00", "14:15", "14:30" etc.
+  sede_id: string // en qué sede trabaja esa franja
 }
 
 export interface Profesor {
