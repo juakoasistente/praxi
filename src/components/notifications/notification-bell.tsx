@@ -53,7 +53,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 max-w-[calc(100vw-2rem)] sm:max-w-none">
+        <div className="absolute left-0 top-full z-50 mt-2 min-w-80 sm:min-w-96">
           <NotificationPanel
             notifications={notifications}
             onMarkAsRead={(id) => markAsRead(id)}
