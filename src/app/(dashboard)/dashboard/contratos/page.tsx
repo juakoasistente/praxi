@@ -28,7 +28,6 @@ import { Input } from "@/components/ui/input"
 import { ExportButton } from "@/components/ui/export-button"
 import { RequireWrite } from "@/components/auth/require-write"
 import { exportToCSV, exportFormatDate, exportFormatCurrency } from "@/lib/export"
-import { MOCK_CONTRATOS } from "@/components/contratos/mock-data"
 import { ContratoFormDialog } from "@/components/contratos/contrato-form-dialog"
 import { ContratoPreview } from "@/components/contratos/contrato-preview"
 import type { Contrato, EstadoContrato } from "@/components/contratos/types"
@@ -51,7 +50,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function ContratosPage() {
-  const [contratos, setContratos] = React.useState<Contrato[]>(MOCK_CONTRATOS)
+  const [contratos, setContratos] = React.useState<Contrato[]>([])
   const [search, setSearch] = React.useState("")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")
   const [formOpen, setFormOpen] = React.useState(false)

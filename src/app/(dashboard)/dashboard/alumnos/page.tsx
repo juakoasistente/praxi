@@ -24,7 +24,6 @@ import {
 import { AlumnoFormDialog } from "@/components/alumnos/alumno-form-dialog"
 import { AlumnoDetailSheet } from "@/components/alumnos/alumno-detail-sheet"
 import { ConfirmarBajaDialog } from "@/components/alumnos/confirmar-baja-dialog"
-import { MOCK_ALUMNOS } from "@/components/alumnos/mock-data"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { getAlumnos, createAlumno, updateAlumno } from "@/lib/services/alumnos"
@@ -51,7 +50,7 @@ function formatDate(dateStr: string) {
 
 export default function AlumnosPage() {
   const { data: supabaseAlumnos, loading, error, refetch } = useSupabaseQuery(() => getAlumnos())
-  const [alumnos, setAlumnos] = React.useState<Alumno[]>(MOCK_ALUMNOS)
+  const [alumnos, setAlumnos] = React.useState<Alumno[]>([])
   const { selectedSede } = useSede()
 
   // Sync supabase data when available

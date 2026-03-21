@@ -26,7 +26,6 @@ import { CosteFormDialog } from "@/components/vehiculos/coste-form-dialog"
 import { IncidenciaFormDialog } from "@/components/vehiculos/incidencia-form-dialog"
 import { CompararVehiculosDialog } from "@/components/vehiculos/comparar-vehiculos-dialog"
 import { ConfirmarBajaDialog } from "@/components/vehiculos/confirmar-baja-dialog"
-import { MOCK_VEHICULOS, MOCK_COSTES, MOCK_INCIDENCIAS } from "@/components/vehiculos/mock-data"
 import type {
   Vehiculo,
   CosteVehiculo,
@@ -71,9 +70,9 @@ export default function VehiculosPage() {
   const { data: sbIncidencias, loading: loadingI, refetch: refetchI } = useSupabaseQuery(() => getAllIncidencias())
   const { selectedSede } = useSede()
 
-  const [vehiculos, setVehiculos] = React.useState<Vehiculo[]>(MOCK_VEHICULOS)
-  const [costes, setCostes] = React.useState<CosteVehiculo[]>(MOCK_COSTES)
-  const [incidencias, setIncidencias] = React.useState<IncidenciaVehiculo[]>(MOCK_INCIDENCIAS)
+  const [vehiculos, setVehiculos] = React.useState<Vehiculo[]>([])
+  const [costes, setCostes] = React.useState<CosteVehiculo[]>([])
+  const [incidencias, setIncidencias] = React.useState<IncidenciaVehiculo[]>([])
 
   React.useEffect(() => { if (sbVehiculos) setVehiculos(sbVehiculos) }, [sbVehiculos])
   React.useEffect(() => { if (sbCostes) setCostes(sbCostes) }, [sbCostes])

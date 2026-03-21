@@ -13,8 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  MOCK_CLASES,
-  PROFESORES_CLASES,
   type Clase,
   type EstadoClase,
 } from "@/components/clases/mock-data"
@@ -71,8 +69,8 @@ export default function ClasesPage() {
   const { data: sbClases, loading: loadingClases, refetch: refetchClases } = useSupabaseQuery(() => getClases())
   const { data: sbProfesores, loading: loadingProfesores } = useSupabaseQuery(() => getProfesores())
 
-  const [clases, setClases] = useState<Clase[]>(MOCK_CLASES)
-  const profesores = sbProfesores?.map(p => ({ id: p.id, nombre: p.nombre, apellidos: p.apellidos })) ?? PROFESORES_CLASES
+  const [clases, setClases] = useState<Clase[]>([])
+  const profesores = sbProfesores?.map(p => ({ id: p.id, nombre: p.nombre, apellidos: p.apellidos })) ?? []
 
   useEffect(() => { if (sbClases) setClases(sbClases) }, [sbClases])
 

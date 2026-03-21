@@ -32,7 +32,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { MOCK_PLANTILLAS, MOCK_CONFIG, MOCK_HISTORIAL } from "@/components/whatsapp/mock-data"
 import type { PlantillaWhatsApp, ConfigWhatsApp, HistorialEnvio, TipoPlantilla, EstadoPlantilla } from "@/components/whatsapp/types"
 import {
   TIPO_LABELS,
@@ -68,9 +67,9 @@ const VARIABLES_DISPONIBLES: Record<TipoPlantilla, string[]> = {
 }
 
 export default function AutomatizacionesPage() {
-  const [plantillas, setPlantillas] = React.useState<PlantillaWhatsApp[]>(MOCK_PLANTILLAS)
-  const [config, setConfig] = React.useState<ConfigWhatsApp>(MOCK_CONFIG)
-  const [historial] = React.useState<HistorialEnvio[]>(MOCK_HISTORIAL)
+  const [plantillas, setPlantillas] = React.useState<PlantillaWhatsApp[]>([])
+  const [config, setConfig] = React.useState<ConfigWhatsApp>({} as ConfigWhatsApp)
+  const [historial] = React.useState<HistorialEnvio[]>([])
 
   // Editor state
   const [editorOpen, setEditorOpen] = React.useState(false)

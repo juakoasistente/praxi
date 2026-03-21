@@ -4,13 +4,12 @@ import { useState, useCallback } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ConversationList } from "@/components/inbox/conversation-list"
 import { ConversationDetail, EmptyState } from "@/components/inbox/conversation-detail"
-import { MOCK_CONVERSACIONES, MOCK_MENSAJES } from "@/components/inbox/mock-data"
 import type { Conversacion, Mensaje, EstadoConversacion } from "@/components/inbox/types"
 
 export default function InboxPage() {
   const isMobile = useIsMobile()
-  const [conversaciones, setConversaciones] = useState<Conversacion[]>(MOCK_CONVERSACIONES)
-  const [mensajes, setMensajes] = useState<Record<string, Mensaje[]>>(MOCK_MENSAJES)
+  const [conversaciones, setConversaciones] = useState<Conversacion[]>([])
+  const [mensajes, setMensajes] = useState<Record<string, Mensaje[]>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const selectedConv = conversaciones.find((c) => c.id === selectedId) ?? null

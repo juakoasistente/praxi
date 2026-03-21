@@ -23,8 +23,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { ProfesorFormDialog } from "@/components/profesores/profesor-form-dialog"
-import { MOCK_PROFESORES } from "@/components/profesores/mock-data"
 import type { Profesor } from "@/components/profesores/types"
+import { TIPO_CLASE_LABELS, DIA_LABELS } from "@/components/profesores/types"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { getProfesores, createProfesor, updateProfesor } from "@/lib/services/profesores"
@@ -35,7 +35,7 @@ import { toast } from "sonner"
 
 export default function ProfesoresPage() {
   const { data: supabaseProfesores, loading, error, refetch } = useSupabaseQuery(() => getProfesores())
-  const [profesores, setProfesores] = React.useState<Profesor[]>(MOCK_PROFESORES)
+  const [profesores, setProfesores] = React.useState<Profesor[]>([])
   const [search, setSearch] = React.useState("")
   const [formOpen, setFormOpen] = React.useState(false)
   const [editingProfesor, setEditingProfesor] = React.useState<Profesor | null>(null)
@@ -139,7 +139,12 @@ export default function ProfesoresPage() {
                 { key: "apellidos", label: "Apellidos" },
                 { key: "email", label: "Email" },
                 { key: "telefono", label: "Teléfono" },
+                { key: "tipo_clase", label: "Tipo", format: (v) => TIPO_CLASE_LABELS[v as keyof typeof TIPO_CLASE_LABELS] || String(v) },
                 { key: "permisos_habilitados", label: "Especialidad", format: (v) => (v as string[]).join(", ") },
+                { key: "horario", label: "Horario", format: (v) => {
+                  const horario = v as Array<{dia: string, hora_inicio: string, hora_fin: string}>
+                  return horario.map(h => `${DIA_LABELS[h.dia as keyof typeof DIA_LABELS] || h.dia}: ${h.hora_inicio}-${h.hora_fin}`).join("; ")
+                }},
               ], "profesores")
             }
           />
@@ -178,6 +183,7 @@ export default function ProfesoresPage() {
                 <TableHead className="hidden sm:table-cell">Email</TableHead>
                 <TableHead className="hidden md:table-cell">Teléfono</TableHead>
                 <TableHead>Permisos</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
@@ -202,6 +208,11 @@ export default function ProfesoresPage() {
                         </Badge>
                       ))}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {TIPO_CLASE_LABELS[profesor.tipo_clase] || profesor.tipo_clase}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge

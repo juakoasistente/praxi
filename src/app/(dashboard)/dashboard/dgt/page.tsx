@@ -35,7 +35,6 @@ import { ExportButton } from "@/components/ui/export-button"
 import { exportToCSV, exportFormatDate, exportFormatCurrency } from "@/lib/export"
 import { DocumentoChecklist } from "@/components/dgt/documento-checklist"
 import { TramiteDetailSheet } from "@/components/dgt/tramite-detail-sheet"
-import { MOCK_TRAMITES } from "@/components/dgt/mock-data"
 import type { TramiteDGT, TipoTramite, EstadoTramite } from "@/components/dgt/types"
 import {
   TIPO_TRAMITE_LABELS,
@@ -76,7 +75,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function DGTPage() {
-  const [tramites, setTramites] = React.useState<TramiteDGT[]>(MOCK_TRAMITES)
+  const [tramites, setTramites] = React.useState<TramiteDGT[]>([])
   const [search, setSearch] = React.useState("")
   const [filtroTipo, setFiltroTipo] = React.useState<string>("todos")
   const [filtroEstado, setFiltroEstado] = React.useState<string>("todos")

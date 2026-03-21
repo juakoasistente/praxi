@@ -26,7 +26,6 @@ import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { ExamenFormDialog } from "@/components/examenes/examen-form-dialog"
 import { ExamenDetailDialog } from "@/components/examenes/examen-detail-dialog"
 import { ExamenCalendar } from "@/components/examenes/examen-calendar"
-import { MOCK_EXAMENES } from "@/components/examenes/mock-data"
 import type { Examen } from "@/components/examenes/types"
 import {
   TIPO_LABELS,
@@ -59,7 +58,7 @@ function formatDate(dateStr: string) {
 
 export default function ExamenesPage() {
   const { data: sbExamenes, loading, refetch } = useSupabaseQuery(() => getExamenes())
-  const [examenes, setExamenes] = React.useState<Examen[]>(MOCK_EXAMENES)
+  const [examenes, setExamenes] = React.useState<Examen[]>([])
   const { selectedSede } = useSede()
 
   React.useEffect(() => {

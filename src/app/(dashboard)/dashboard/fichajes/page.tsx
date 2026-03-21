@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
-import { MOCK_FICHAJES, EMPLEADOS } from "@/components/fichajes/mock-data"
+import { EMPLEADOS } from "@/components/fichajes/mock-data"
 import type { Fichaje } from "@/components/fichajes/types"
 import { es } from "react-day-picker/locale"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
@@ -71,7 +71,7 @@ export default function FichajesPage() {
   const { data: userProfile } = useSupabaseQuery(() => getUserProfile())
   const { selectedSede } = useSede()
 
-  const [fichajes, setFichajes] = React.useState<Fichaje[]>(MOCK_FICHAJES)
+  const [fichajes, setFichajes] = React.useState<Fichaje[]>([])
 
   React.useEffect(() => { if (sbFichajes) setFichajes(sbFichajes) }, [sbFichajes])
 

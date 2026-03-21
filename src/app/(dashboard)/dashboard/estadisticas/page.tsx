@@ -20,9 +20,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { exportToCSV, exportFormatCurrency } from "@/lib/export"
-import { MOCK_EXAMENES } from "@/components/examenes/mock-data"
-import { MOCK_FACTURAS } from "@/components/facturacion/mock-data"
-import { MOCK_VEHICULOS, MOCK_COSTES } from "@/components/vehiculos/mock-data"
+import { Examen } from "@/components/examenes/types"
+import { Vehiculo, CosteVehiculo } from "@/components/vehiculos/types"
+import { Factura } from "@/components/facturacion/types"
 
 // --- Derived data ---
 
@@ -47,10 +47,11 @@ function getProfesor(examId: string) {
 
 export default function EstadisticasPage() {
   // --- Tasa de aprobados ---
-  const aprobados = MOCK_EXAMENES.filter((e) => e.resultado === "aprobado").length
-  const suspendidos = MOCK_EXAMENES.filter((e) => e.resultado === "suspendido").length
-  const pendientes = MOCK_EXAMENES.filter((e) => e.resultado === "pendiente").length
-  const noPresentados = MOCK_EXAMENES.filter((e) => e.resultado === "no_presentado").length
+  const examenes: Examen[] = []
+  const aprobados = examenes.filter((e) => e.resultado === "aprobado").length
+  const suspendidos = examenes.filter((e) => e.resultado === "suspendido").length
+  const pendientes = examenes.filter((e) => e.resultado === "pendiente").length
+  const noPresentados = examenes.filter((e) => e.resultado === "no_presentado").length
   const totalConResultado = aprobados + suspendidos + noPresentados
   const pctAprobados = totalConResultado > 0 ? Math.round((aprobados / totalConResultado) * 100) : 0
 
@@ -62,8 +63,8 @@ export default function EstadisticasPage() {
   ].filter((d) => d.value > 0)
 
   // Breakdown by tipo
-  const teoricoExams = MOCK_EXAMENES.filter((e) => e.tipo === "teorico")
-  const practicoExams = MOCK_EXAMENES.filter((e) => e.tipo === "practico")
+  const teoricoExams = examenes.filter((e) => e.tipo === "teorico")
+  const practicoExams = examenes.filter((e) => e.tipo === "practico")
   const teoricoAprobados = teoricoExams.filter((e) => e.resultado === "aprobado").length
   const teoricoTotal = teoricoExams.filter((e) => e.resultado !== "pendiente").length
   const practicoAprobados = practicoExams.filter((e) => e.resultado === "aprobado").length
@@ -72,7 +73,7 @@ export default function EstadisticasPage() {
   // --- Aprobados por profesor ---
   const profesorStats = React.useMemo(() => {
     const stats: Record<string, { total: number; aprobados: number }> = {}
-    MOCK_EXAMENES.forEach((e) => {
+    examenes.forEach((e) => {
       if (e.resultado === "pendiente") return
       const prof = getProfesor(e.id)
       if (!stats[prof]) stats[prof] = { total: 0, aprobados: 0 }
@@ -96,11 +97,11 @@ export default function EstadisticasPage() {
       const y = d.getFullYear()
       const m = d.getMonth()
       const label = `${MONTH_NAMES_SHORT[m]} ${y.toString().slice(2)}`
-      const teorico = MOCK_EXAMENES.filter((e) => {
+      const teorico = examenes.filter((e) => {
         const ed = new Date(e.fecha)
         return ed.getFullYear() === y && ed.getMonth() === m && e.tipo === "teorico"
       }).length
-      const practico = MOCK_EXAMENES.filter((e) => {
+      const practico = examenes.filter((e) => {
         const ed = new Date(e.fecha)
         return ed.getFullYear() === y && ed.getMonth() === m && e.tipo === "practico"
       }).length
@@ -111,12 +112,14 @@ export default function EstadisticasPage() {
 
   // --- Vehículos: coste por km ---
   const costePorKm = React.useMemo(() => {
-    return MOCK_VEHICULOS
+    const vehiculos: Vehiculo[] = []
+    const costes: CosteVehiculo[] = []
+    return vehiculos
       .filter((v) => v.km_actuales > 0 && v.estado !== "baja")
       .map((v) => {
-        const costes = MOCK_COSTES.filter((c) => c.vehiculo_id === v.id)
+        const costesVehiculo = costes.filter((c) => c.vehiculo_id === v.id)
           .reduce((sum, c) => sum + c.importe, 0)
-        const total = v.precio_adquisicion + costes
+        const total = v.precio_adquisicion + costesVehiculo
         return {
           vehiculo: `${v.marca} ${v.modelo}`,
           costePorKm: parseFloat((total / v.km_actuales).toFixed(2)),
@@ -127,6 +130,7 @@ export default function EstadisticasPage() {
 
   // --- Resumen financiero (last 6 months) ---
   const resumenFinanciero = React.useMemo(() => {
+    const facturas: Factura[] = []
     const now = new Date(2026, 2, 20)
     const months: { mes: string; facturado: number; cobrado: number }[] = []
     for (let i = 5; i >= 0; i--) {
@@ -134,14 +138,14 @@ export default function EstadisticasPage() {
       const y = d.getFullYear()
       const m = d.getMonth()
       const label = `${MONTH_NAMES_SHORT[m]} ${y.toString().slice(2)}`
-      const facturado = MOCK_FACTURAS
+      const facturado = facturas
         .filter((f) => {
           if (f.estado === "anulada") return false
           const fd = new Date(f.fecha_emision)
           return fd.getFullYear() === y && fd.getMonth() === m
         })
         .reduce((sum, f) => sum + f.total, 0)
-      const cobrado = MOCK_FACTURAS
+      const cobrado = facturas
         .filter((f) => {
           if (!f.fecha_pago) return false
           const pd = new Date(f.fecha_pago)
@@ -153,10 +157,11 @@ export default function EstadisticasPage() {
     return months
   }, [])
 
-  const totalFacturado = MOCK_FACTURAS
+  const facturas: Factura[] = []
+  const totalFacturado = facturas
     .filter((f) => f.estado !== "anulada")
     .reduce((sum, f) => sum + f.total, 0)
-  const totalCobrado = MOCK_FACTURAS
+  const totalCobrado = facturas
     .filter((f) => f.estado === "pagada")
     .reduce((sum, f) => sum + f.total, 0)
 

@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select"
 import { FacturaFormDialog } from "@/components/facturacion/factura-form-dialog"
 import { FacturaDetailSheet } from "@/components/facturacion/factura-detail-sheet"
-import { MOCK_FACTURAS, MOCK_PAGOS } from "@/components/facturacion/mock-data"
 import type { Factura, PagoFactura } from "@/components/facturacion/types"
 import {
   ESTADO_FACTURA_LABELS,
@@ -58,8 +57,8 @@ function formatCurrency(amount: number) {
 
 export default function FacturacionPage() {
   const { data: sbFacturas, loading, refetch } = useSupabaseQuery(() => getFacturas())
-  const [facturas, setFacturas] = React.useState<Factura[]>(MOCK_FACTURAS)
-  const [pagos, setPagos] = React.useState<PagoFactura[]>(MOCK_PAGOS)
+  const [facturas, setFacturas] = React.useState<Factura[]>([])
+  const [pagos, setPagos] = React.useState<PagoFactura[]>([])
 
   React.useEffect(() => {
     if (sbFacturas) setFacturas(sbFacturas)
