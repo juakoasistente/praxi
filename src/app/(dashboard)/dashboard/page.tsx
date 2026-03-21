@@ -1,6 +1,13 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import {
+  Users,
+  GraduationCap,
+  Calendar,
+  ClipboardCheck,
+  Receipt,
+  Clock,
+} from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -36,7 +43,7 @@ export default async function DashboardPage() {
     {
       title: 'Alumnos activos',
       value: alumnosCount ?? 0,
-      icon: '/icons/alumnos.png',
+      icon: Users,
       description: 'Matriculados y en curso',
       href: '/dashboard/alumnos',
       color: 'bg-blue-50 border-blue-100 dark:bg-blue-950/30 dark:border-blue-900/30',
@@ -44,7 +51,7 @@ export default async function DashboardPage() {
     {
       title: 'Profesores',
       value: profesoresCount ?? 0,
-      icon: '/icons/profesores.png',
+      icon: GraduationCap,
       description: 'En plantilla',
       href: '/dashboard/profesores',
       color: 'bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/30',
@@ -52,7 +59,7 @@ export default async function DashboardPage() {
     {
       title: 'Clases hoy',
       value: clasesHoy ?? 0,
-      icon: '/icons/clases.png',
+      icon: Calendar,
       description: new Date().toLocaleDateString('es-ES', {
         weekday: 'long',
         day: 'numeric',
@@ -64,7 +71,7 @@ export default async function DashboardPage() {
     {
       title: 'Facturas pendientes',
       value: facturasPendientes ?? 0,
-      icon: '/icons/facturacion.png',
+      icon: Receipt,
       description: 'Por cobrar',
       href: '/dashboard/facturacion',
       color: 'bg-rose-50 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/30',
@@ -75,25 +82,25 @@ export default async function DashboardPage() {
     {
       title: 'Nuevo alumno',
       description: 'Matricular un alumno',
-      icon: '/icons/alumnos.png',
+      icon: Users,
       href: '/dashboard/alumnos',
     },
     {
       title: 'Programar clase',
       description: 'Asignar clase práctica',
-      icon: '/icons/clases.png',
+      icon: Calendar,
       href: '/dashboard/clases',
     },
     {
       title: 'Subir a examen',
       description: 'Gestionar presentaciones',
-      icon: '/icons/examenes.png',
+      icon: ClipboardCheck,
       href: '/dashboard/examenes',
     },
     {
       title: 'Fichaje',
       description: 'Registrar entrada/salida',
-      icon: '/icons/fichajes.png',
+      icon: Clock,
       href: '/dashboard/fichajes',
     },
   ]
@@ -120,12 +127,7 @@ export default async function DashboardPage() {
                   {stat.title}
                 </CardTitle>
                 <div className="rounded-lg bg-white/80 dark:bg-white/10 p-2 shadow-sm">
-                  <Image
-                    src={stat.icon}
-                    alt={stat.title}
-                    width={24}
-                    height={24}
-                  />
+                  <stat.icon className="h-6 w-6 text-primary" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -148,12 +150,7 @@ export default async function DashboardPage() {
               <Card className="border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30">
                 <CardContent className="flex items-center gap-4 p-4">
                   <div className="rounded-lg bg-primary/5 p-2.5">
-                    <Image
-                      src={link.icon}
-                      alt={link.title}
-                      width={28}
-                      height={28}
-                    />
+                    <link.icon className="h-7 w-7 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold">{link.title}</p>

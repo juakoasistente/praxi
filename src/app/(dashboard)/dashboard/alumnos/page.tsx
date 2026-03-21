@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
-import { Search, Plus, X } from "lucide-react"
+import { Search, Plus, X, Users } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -146,12 +145,9 @@ export default function AlumnosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Image
-            src="/icons/alumnos.png"
-            alt="Alumnos"
-            width={36}
-            height={36}
-          />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+            <Users className="h-5 w-5 text-primary" />
+          </div>
           <div>
             <h1 className="text-2xl font-bold">Alumnos</h1>
             <p className="text-sm text-muted-foreground">

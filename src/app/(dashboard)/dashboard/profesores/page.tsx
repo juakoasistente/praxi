@@ -1,8 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
-import { Search, Plus } from "lucide-react"
+import { Search, Plus, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -122,12 +121,9 @@ export default function ProfesoresPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Image
-            src="/icons/profesores.png"
-            alt="Profesores"
-            width={36}
-            height={36}
-          />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+            <GraduationCap className="h-5 w-5 text-primary" />
+          </div>
           <div>
             <h1 className="text-2xl font-bold">Profesores</h1>
             <p className="text-sm text-muted-foreground">
