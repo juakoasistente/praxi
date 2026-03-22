@@ -13,6 +13,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
+import { Eye, EyeOff, RefreshCw } from "lucide-react"
+import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -23,6 +27,7 @@ import {
 import type { Alumno, PermisoType, EstadoAlumno } from "./types"
 import { PERMISOS, ESTADOS, ESTADO_LABELS } from "./types"
 import { alumnoSchema } from "@/lib/validations/alumno"
+import { createAlumnoAccount } from "@/lib/services/alumnos"
 
 type AlumnoFormData = Omit<Alumno, "id">
 
@@ -56,6 +61,10 @@ export function AlumnoFormDialog({
 }: AlumnoFormDialogProps) {
   const [form, setForm] = React.useState<AlumnoFormData>(EMPTY_FORM)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
+  const [createAccount, setCreateAccount] = React.useState(false)
+  const [accountPassword, setAccountPassword] = React.useState("")
+  const [showAccountPassword, setShowAccountPassword] = React.useState(false)
+  const [accountCredentials, setAccountCredentials] = React.useState<{ email: string; password: string } | null>(null)
   const isEditing = !!alumno
 
   React.useEffect(() => {
@@ -66,6 +75,10 @@ export function AlumnoFormDialog({
       setForm(EMPTY_FORM)
     }
     setErrors({})
+    setCreateAccount(false)
+    setAccountPassword("")
+    setShowAccountPassword(false)
+    setAccountCredentials(null)
   }, [alumno, open])
 
   function clearError(field: string) {
@@ -78,8 +91,28 @@ export function AlumnoFormDialog({
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function generatePassword() {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    let password = ""
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    setAccountPassword(password)
+  }
+
+  React.useEffect(() => {
+    if (createAccount && form.email) {
+      // Auto-generate password when email is filled
+      if (!accountPassword) {
+        generatePassword()
+      }
+    }
+  }, [createAccount, form.email, accountPassword])
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // Validate alumno data
     const result = alumnoSchema.safeParse(form)
     if (!result.success) {
       const fieldErrors: Record<string, string> = {}
@@ -90,9 +123,51 @@ export function AlumnoFormDialog({
       setErrors(fieldErrors)
       return
     }
+
+    // Validate account creation if enabled
+    if (createAccount) {
+      if (!form.email) {
+        setErrors({ email: "El email es obligatorio para crear una cuenta" })
+        return
+      }
+      if (!accountPassword) {
+        setErrors({ accountPassword: "La contraseña es obligatoria" })
+        return
+      }
+    }
+
     setErrors({})
-    onSave(form)
-    onOpenChange(false)
+
+    try {
+      // Save alumno data first
+      onSave(form)
+
+      // Create account if requested
+      if (createAccount && form.email && accountPassword) {
+        try {
+          await createAlumnoAccount(form.email, accountPassword)
+          setAccountCredentials({
+            email: form.email,
+            password: accountPassword
+          })
+          toast.success("Alumno matriculado y cuenta creada", {
+            description: `Credenciales: ${form.email} / ${accountPassword}`
+          })
+        } catch (error: any) {
+          toast.error("Alumno matriculado pero error al crear cuenta", {
+            description: error.message
+          })
+        }
+      } else {
+        toast.success("Alumno matriculado correctamente")
+      }
+
+      onOpenChange(false)
+    } catch (error: any) {
+      toast.error("Error al matricular alumno", {
+        description: error.message
+      })
+    }
   }
 
   return (
@@ -269,6 +344,94 @@ export function AlumnoFormDialog({
               }
             />
           </div>
+
+          {/* Account Creation Section - Only for new alumnos */}
+          {!isEditing && (
+            <>
+              <Separator />
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="createAccount"
+                    checked={createAccount}
+                    onCheckedChange={(checked) => setCreateAccount(!!checked)}
+                  />
+                  <Label htmlFor="createAccount" className="text-sm font-medium">
+                    Crear cuenta de acceso al portal
+                  </Label>
+                </div>
+
+                {createAccount && (
+                  <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground">
+                      Se creará una cuenta para que el alumno pueda acceder al portal.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="accountEmail">Email para la cuenta</Label>
+                        <Input
+                          id="accountEmail"
+                          type="email"
+                          value={form.email ?? ""}
+                          onChange={(e) => {
+                            setForm({ ...form, email: e.target.value || null })
+                            clearError("email")
+                          }}
+                          placeholder="email@ejemplo.com"
+                        />
+                        {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label htmlFor="accountPassword">Contraseña</Label>
+                        <div className="flex gap-1">
+                          <div className="relative flex-1">
+                            <Input
+                              id="accountPassword"
+                              type={showAccountPassword ? "text" : "password"}
+                              value={accountPassword}
+                              onChange={(e) => setAccountPassword(e.target.value)}
+                              placeholder="Contraseña generada"
+                              className="pr-8"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+                              onClick={() => setShowAccountPassword(!showAccountPassword)}
+                            >
+                              {showAccountPassword ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
+                            </Button>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={generatePassword}
+                            className="px-2"
+                          >
+                            <RefreshCw className="size-3" />
+                          </Button>
+                        </div>
+                        {errors.accountPassword && <p className="text-xs text-destructive">{errors.accountPassword}</p>}
+                      </div>
+                    </div>
+
+                    {accountCredentials && (
+                      <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+                        <p className="text-xs text-green-800 dark:text-green-200 font-medium">
+                          ✓ Cuenta creada: {accountCredentials.email} / {accountCredentials.password}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>
               Cancelar

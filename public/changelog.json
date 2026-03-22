@@ -1,0 +1,38 @@
+[
+  {
+    "version": "1.2.0",
+    "date": "2026-03-22",
+    "title": "Landing page premium",
+    "changes": [
+      "Rediseño completo de la landing page",
+      "Logo profesional",
+      "Pricing con toggle mensual/anual",
+      "Footer estilo shadcnblocks"
+    ]
+  },
+  {
+    "version": "1.1.0",
+    "date": "2026-03-21",
+    "title": "Multi-sede y diseño corporate",
+    "changes": [
+      "Soporte multi-sede completo",
+      "Tema Corporate de shadcn",
+      "Sidebar con grupos colapsables",
+      "Iconos Lucide en toda la app"
+    ]
+  },
+  {
+    "version": "1.0.0",
+    "date": "2026-03-20",
+    "title": "Lanzamiento inicial",
+    "changes": [
+      "16 pantallas funcionales",
+      "Gestión alumnos, profesores, clases, vehículos",
+      "Facturación con PDF",
+      "Fichaje legal",
+      "Inbox unificado",
+      "Portal alumno",
+      "Estadísticas y reportes"
+    ]
+  }
+]

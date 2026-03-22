@@ -1,0 +1,122 @@
+"use client"
+
+import * as React from "react"
+import { Megaphone, Calendar, Package } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
+
+interface ChangelogEntry {
+  version: string
+  date: string
+  title: string
+  changes: string[]
+}
+
+export default function NovedadesPage() {
+  const [changelog, setChangelog] = React.useState<ChangelogEntry[]>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    async function fetchChangelog() {
+      try {
+        const response = await fetch("/changelog.json")
+        const data = await response.json()
+        setChangelog(data)
+      } catch (error) {
+        console.error("Error fetching changelog:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchChangelog()
+  }, [])
+
+  function formatDate(dateString: string) {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(date)
+  }
+
+  if (loading) return <LoadingSkeleton />
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+          <Megaphone className="size-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">Novedades</h1>
+          <p className="text-sm text-muted-foreground">
+            Historial de cambios y mejoras de la plataforma
+          </p>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="space-y-8">
+        {changelog.map((entry, index) => (
+          <div key={entry.version} className="relative">
+            {/* Timeline line */}
+            {index !== changelog.length - 1 && (
+              <div className="absolute left-4 top-16 h-full w-px bg-border" />
+            )}
+
+            {/* Timeline dot */}
+            <div className="absolute left-2 top-6 size-4 rounded-full border-2 border-primary bg-background" />
+
+            {/* Content */}
+            <div className="pl-10">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="font-mono">
+                        <Package className="size-3 mr-1" />
+                        v{entry.version}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        <Calendar className="size-3 mr-1" />
+                        {formatDate(entry.date)}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl">{entry.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {entry.changes.map((change, changeIndex) => (
+                      <li key={changeIndex} className="flex items-start gap-2">
+                        <div className="mt-2 size-1.5 rounded-full bg-muted-foreground flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          {change}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Empty state */}
+      {changelog.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <Megaphone className="size-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No hay novedades</h3>
+          <p className="text-sm text-muted-foreground">
+            Las actualizaciones aparecerán aquí cuando estén disponibles.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

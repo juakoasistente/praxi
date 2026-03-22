@@ -57,3 +57,28 @@ export async function deleteAlumno(id: string): Promise<void> {
 
   if (error) throw new Error(error.message)
 }
+
+export async function createAlumnoAccount(email: string, password: string) {
+  // Note: This is a simplified version for demo purposes
+  // In production, this should use a Supabase Edge Function with service_role key
+  // For now, we use the regular signup which creates an unverified user
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: undefined // Disable email confirmation for demo
+      }
+    })
+
+    if (error) throw new Error(error.message)
+
+    return {
+      user: data.user,
+      success: true,
+      message: "Cuenta creada correctamente"
+    }
+  } catch (error: any) {
+    throw new Error(`Error creating account: ${error.message}`)
+  }
+}

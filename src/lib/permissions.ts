@@ -22,6 +22,8 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3", group: "Análisis" },
   { href: "/dashboard/informes", label: "Informes", icon: "FileBarChart", group: "Análisis" },
   { href: "/dashboard/dgt", label: "Trámites DGT", icon: "Building2", group: "Administración" },
+  { href: "/dashboard/novedades", label: "Novedades", icon: "Megaphone", group: "Administración" },
+  { href: "/dashboard/mi-plan", label: "Mi plan", icon: "CreditCard", group: "Administración" },
   { href: "/dashboard/configuracion", label: "Configuración", icon: "Settings", group: "Administración" },
 ]
 
@@ -41,6 +43,8 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/informes",
     "/dashboard/automatizaciones",
     "/dashboard/dgt",
+    "/dashboard/novedades",
+    "/dashboard/mi-plan",
     "/dashboard/configuracion",
   ],
   profesor: [
@@ -49,6 +53,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/alumnos",
     "/dashboard/fichajes",
     "/dashboard/examenes",
+    "/dashboard/mi-plan",
   ],
   secretario: [
     "/dashboard",
@@ -60,6 +65,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/contratos",
     "/dashboard/inbox",
     "/dashboard/dgt",
+    "/dashboard/mi-plan",
   ],
 }
 
@@ -87,4 +93,30 @@ export function getNavItems(role: UserRole): NavItem[] {
   const routes = ROLE_ROUTES[role]
   if (!routes) return []
   return ALL_NAV_ITEMS.filter((item) => routes.includes(item.href))
+}
+
+export function getCustomPermissions(userId: string): string[] {
+  // In production, this would fetch from database
+  // For demo, we use localStorage
+  if (typeof window === 'undefined') return []
+
+  const savedPermissions = localStorage.getItem(`user_permissions_${userId}`)
+  return savedPermissions ? JSON.parse(savedPermissions) : []
+}
+
+export function canWriteWithCustom(role: UserRole, entity: string, userId?: string): boolean {
+  // Admin always has all permissions
+  if (role === "admin") return true
+
+  // Check base role permissions first
+  const basePermissions = ROLE_WRITE[role] || []
+  if (basePermissions.includes(entity)) return true
+
+  // Check custom permissions if userId provided
+  if (userId) {
+    const customPermissions = getCustomPermissions(userId)
+    return customPermissions.includes(entity)
+  }
+
+  return false
 }
