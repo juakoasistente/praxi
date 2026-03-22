@@ -1,59 +1,101 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Profesor } from "@/components/profesores/types"
+import { handleSupabaseError } from "@/lib/error-handler"
 
 const supabase = createClient()
 
 export async function getProfesores(): Promise<Profesor[]> {
-  const { data, error } = await supabase
-    .from("profesor")
-    .select("*")
-    .order("nombre", { ascending: true })
+  try {
+    const { data, error } = await supabase
+      .from("profesor")
+      .select("*")
+      .order("nombre", { ascending: true })
 
-  if (error) throw new Error(error.message)
-  return data as Profesor[]
+    if (error) {
+      handleSupabaseError(error, "obtener profesores")
+      return []
+    }
+    return data as Profesor[]
+  } catch (error) {
+    handleSupabaseError(error, "obtener profesores")
+    return []
+  }
 }
 
 export async function getProfesor(id: string): Promise<Profesor | null> {
-  const { data, error } = await supabase
-    .from("profesor")
-    .select("*")
-    .eq("id", id)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from("profesor")
+      .select("*")
+      .eq("id", id)
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Profesor
+    if (error) {
+      handleSupabaseError(error, "obtener profesor")
+      return null
+    }
+    return data as Profesor
+  } catch (error) {
+    handleSupabaseError(error, "obtener profesor")
+    return null
+  }
 }
 
 export async function createProfesor(
   profesor: Omit<Profesor, "id">
-): Promise<Profesor> {
-  const { data, error } = await supabase
-    .from("profesor")
-    .insert(profesor)
-    .select()
-    .single()
+): Promise<Profesor | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profesor")
+      .insert(profesor)
+      .select()
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Profesor
+    if (error) {
+      handleSupabaseError(error, "crear profesor")
+      return null
+    }
+    return data as Profesor
+  } catch (error) {
+    handleSupabaseError(error, "crear profesor")
+    return null
+  }
 }
 
 export async function updateProfesor(
   id: string,
   updates: Partial<Profesor>
-): Promise<Profesor> {
-  const { data, error } = await supabase
-    .from("profesor")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single()
+): Promise<Profesor | null> {
+  try {
+    const { data, error } = await supabase
+      .from("profesor")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Profesor
+    if (error) {
+      handleSupabaseError(error, "actualizar profesor")
+      return null
+    }
+    return data as Profesor
+  } catch (error) {
+    handleSupabaseError(error, "actualizar profesor")
+    return null
+  }
 }
 
-export async function deleteProfesor(id: string): Promise<void> {
-  const { error } = await supabase.from("profesor").delete().eq("id", id)
+export async function deleteProfesor(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("profesor").delete().eq("id", id)
 
-  if (error) throw new Error(error.message)
+    if (error) {
+      handleSupabaseError(error, "eliminar profesor")
+      return false
+    }
+    return true
+  } catch (error) {
+    handleSupabaseError(error, "eliminar profesor")
+    return false
+  }
 }

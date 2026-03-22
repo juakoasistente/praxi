@@ -1,61 +1,103 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Alumno } from "@/components/alumnos/types"
+import { handleSupabaseError } from "@/lib/error-handler"
 
 const supabase = createClient()
 
 export async function getAlumnos(): Promise<Alumno[]> {
-  const { data, error } = await supabase
-    .from("alumno")
-    .select("*")
-    .order("created_at", { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from("alumno")
+      .select("*")
+      .order("created_at", { ascending: false })
 
-  if (error) throw new Error(error.message)
-  return data as Alumno[]
+    if (error) {
+      handleSupabaseError(error, "obtener alumnos")
+      return []
+    }
+    return data as Alumno[]
+  } catch (error) {
+    handleSupabaseError(error, "obtener alumnos")
+    return []
+  }
 }
 
 export async function getAlumno(id: string): Promise<Alumno | null> {
-  const { data, error } = await supabase
-    .from("alumno")
-    .select("*")
-    .eq("id", id)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from("alumno")
+      .select("*")
+      .eq("id", id)
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Alumno
+    if (error) {
+      handleSupabaseError(error, "obtener alumno")
+      return null
+    }
+    return data as Alumno
+  } catch (error) {
+    handleSupabaseError(error, "obtener alumno")
+    return null
+  }
 }
 
 export async function createAlumno(
   alumno: Omit<Alumno, "id">
-): Promise<Alumno> {
-  const { data, error } = await supabase
-    .from("alumno")
-    .insert(alumno)
-    .select()
-    .single()
+): Promise<Alumno | null> {
+  try {
+    const { data, error } = await supabase
+      .from("alumno")
+      .insert(alumno)
+      .select()
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Alumno
+    if (error) {
+      handleSupabaseError(error, "crear alumno")
+      return null
+    }
+    return data as Alumno
+  } catch (error) {
+    handleSupabaseError(error, "crear alumno")
+    return null
+  }
 }
 
 export async function updateAlumno(
   id: string,
   updates: Partial<Alumno>
-): Promise<Alumno> {
-  const { data, error } = await supabase
-    .from("alumno")
-    .update(updates)
-    .eq("id", id)
-    .select()
-    .single()
+): Promise<Alumno | null> {
+  try {
+    const { data, error } = await supabase
+      .from("alumno")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single()
 
-  if (error) throw new Error(error.message)
-  return data as Alumno
+    if (error) {
+      handleSupabaseError(error, "actualizar alumno")
+      return null
+    }
+    return data as Alumno
+  } catch (error) {
+    handleSupabaseError(error, "actualizar alumno")
+    return null
+  }
 }
 
-export async function deleteAlumno(id: string): Promise<void> {
-  const { error } = await supabase.from("alumno").delete().eq("id", id)
+export async function deleteAlumno(id: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("alumno").delete().eq("id", id)
 
-  if (error) throw new Error(error.message)
+    if (error) {
+      handleSupabaseError(error, "eliminar alumno")
+      return false
+    }
+    return true
+  } catch (error) {
+    handleSupabaseError(error, "eliminar alumno")
+    return false
+  }
 }
 
 export async function createAlumnoAccount(email: string, password: string) {
@@ -71,7 +113,14 @@ export async function createAlumnoAccount(email: string, password: string) {
       }
     })
 
-    if (error) throw new Error(error.message)
+    if (error) {
+      handleSupabaseError(error, "crear cuenta de alumno")
+      return {
+        user: null,
+        success: false,
+        message: "Error al crear la cuenta"
+      }
+    }
 
     return {
       user: data.user,
@@ -79,6 +128,11 @@ export async function createAlumnoAccount(email: string, password: string) {
       message: "Cuenta creada correctamente"
     }
   } catch (error: any) {
-    throw new Error(`Error creating account: ${error.message}`)
+    handleSupabaseError(error, "crear cuenta de alumno")
+    return {
+      user: null,
+      success: false,
+      message: "Error al crear la cuenta"
+    }
   }
 }
