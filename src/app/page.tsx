@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Users,
   GraduationCap,
@@ -19,9 +19,58 @@ import {
   Zap,
   Shield,
   Smartphone,
+  Star,
+  MessageCircle,
+  Camera,
+  Mail,
+  ArrowRight,
+  LayoutDashboard,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { motion, useInView } from "framer-motion"
+import { useRef } from "react"
+
+// Animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+}
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } }
+}
+
+const staggerItem = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 }
+}
+
+// Animated counter component
+function AnimatedCounter({ end, duration = 2000 }: { end: number; duration?: number }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    if (!isInView) return
+
+    let startTime: number
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime
+      const progress = Math.min((currentTime - startTime) / duration, 1)
+      setCount(Math.floor(progress * end))
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [end, duration, isInView])
+
+  return <span ref={ref}>{count}</span>
+}
 
 export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -42,40 +91,54 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-background/95 backdrop-blur-sm border-b border-border'
+          ? 'bg-slate-950/95 backdrop-blur-xl border-b border-white/10'
           : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link href="/" className="text-2xl font-bold text-primary">
-                Praxi
+              <Link href="/" className="flex items-center gap-2 text-white">
+                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="nav-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{stopColor:"#4f46e5"}} />
+                      <stop offset="100%" style={{stopColor:"#3b38f7"}} />
+                    </linearGradient>
+                  </defs>
+                  <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#nav-logo-gradient)" />
+                  <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
+                  <circle cx="15" cy="75" r="3" fill="#4f46e5" opacity="0.8" />
+                  <circle cx="35" cy="68" r="2" fill="#4f46e5" opacity="0.6" />
+                  <circle cx="55" cy="75" r="2.5" fill="#4f46e5" opacity="0.7" />
+                  <circle cx="75" cy="68" r="2" fill="#4f46e5" opacity="0.5" />
+                </svg>
+                <span className="text-xl font-bold tracking-tight">Praxi</span>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-8">
+              <div className="flex items-center space-x-8">
                 <button
                   onClick={() => scrollToSection('features')}
-                  className="text-foreground hover:text-primary transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   Funcionalidades
                 </button>
                 <button
                   onClick={() => scrollToSection('pricing')}
-                  className="text-foreground hover:text-primary transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   Precios
                 </button>
                 <button
                   onClick={() => scrollToSection('contact')}
-                  className="text-foreground hover:text-primary transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   Contacto
                 </button>
@@ -85,10 +148,15 @@ export default function LandingPage() {
             {/* Desktop CTA Buttons */}
             <div className="hidden md:flex items-center space-x-4">
               <Link href="/login">
-                <Button variant="outline">Iniciar sesión</Button>
+                <Button variant="ghost" className="text-white border-white/20 hover:bg-white/10">
+                  Iniciar sesión
+                </Button>
               </Link>
-              <Button onClick={() => scrollToSection('cta-final')}>
-                Solicitar demo
+              <Button
+                onClick={() => scrollToSection('cta-final')}
+                className="bg-white text-slate-900 hover:bg-white/90"
+              >
+                Empezar gratis
               </Button>
             </div>
 
@@ -98,6 +166,7 @@ export default function LandingPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-white"
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -107,445 +176,767 @@ export default function LandingPage() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-background border-b border-border">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="md:hidden"
+          >
+            <div className="px-4 pt-2 pb-3 space-y-1 bg-slate-950/95 backdrop-blur-xl border-b border-white/10">
               <button
                 onClick={() => scrollToSection('features')}
-                className="block w-full text-left px-3 py-2 text-foreground hover:text-primary"
+                className="block w-full text-left px-3 py-2 text-white/80 hover:text-white"
               >
                 Funcionalidades
               </button>
               <button
                 onClick={() => scrollToSection('pricing')}
-                className="block w-full text-left px-3 py-2 text-foreground hover:text-primary"
+                className="block w-full text-left px-3 py-2 text-white/80 hover:text-white"
               >
                 Precios
               </button>
               <button
                 onClick={() => scrollToSection('contact')}
-                className="block w-full text-left px-3 py-2 text-foreground hover:text-primary"
+                className="block w-full text-left px-3 py-2 text-white/80 hover:text-white"
               >
                 Contacto
               </button>
               <div className="flex flex-col space-y-2 px-3 pt-4">
                 <Link href="/login" className="w-full">
-                  <Button variant="outline" className="w-full">Iniciar sesión</Button>
+                  <Button variant="ghost" className="w-full text-white border-white/20">
+                    Iniciar sesión
+                  </Button>
                 </Link>
                 <Button
                   onClick={() => scrollToSection('cta-final')}
-                  className="w-full"
+                  className="w-full bg-white text-slate-900"
                 >
-                  Solicitar demo
+                  Empezar gratis
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
-        <div className="relative max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            Gestiona tu autoescuela
-            <br />
-            <span className="text-primary">sin complicaciones</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-            Alumnos, profesores, clases, exámenes, facturación y fichaje legal.
-            Todo en un solo lugar, desde cualquier dispositivo.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              onClick={() => scrollToSection('cta-final')}
-              className="text-lg px-8 py-4"
-            >
-              Solicitar demo
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => scrollToSection('features')}
-              className="text-lg px-8 py-4"
-            >
-              Ver funcionalidades
-              <ChevronDown className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+
+        {/* Animated gradient orbs */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            animate={{
+              x: [0, 100, 0],
+              y: [0, -100, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            className="absolute -top-40 -left-40 w-80 h-80 bg-blue-600/20 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{
+              x: [0, -100, 0],
+              y: [0, 100, 0],
+            }}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+            className="absolute -bottom-40 -right-40 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"
+          />
         </div>
-      </section>
 
-      {/* Problem Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              ¿Todavía gestionas tu autoescuela con Excel?
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-8">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 mx-auto mb-6 bg-destructive/10 rounded-full flex items-center justify-center">
-                  <X className="h-8 w-8 text-destructive" />
-                </div>
-                <h3 className="text-xl font-semibold mb-4">Papeles por todas partes</h3>
-                <p className="text-muted-foreground">
-                  Contratos, fichas, documentos DGT desperdigados.
-                  Sin orden ni control de versiones.
-                </p>
-              </CardContent>
-            </Card>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
 
-            <Card className="text-center p-8">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 mx-auto mb-6 bg-destructive/10 rounded-full flex items-center justify-center">
-                  <Shield className="h-8 w-8 text-destructive" />
-                </div>
-                <h3 className="text-xl font-semibold mb-4">Multas por fichaje</h3>
-                <p className="text-muted-foreground">
-                  La normativa exige registro digital de jornada.
-                  Las multas empiezan en 626€.
-                </p>
-              </CardContent>
-            </Card>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Announcement Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mb-8"
+            >
+              <Badge className="bg-white/10 text-white border-white/20 px-4 py-2 text-sm backdrop-blur-sm hover:bg-white/20 transition-all cursor-default">
+                ✨ Nuevo: Fichaje legal incluido
+              </Badge>
+            </motion.div>
 
-            <Card className="text-center p-8">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 mx-auto mb-6 bg-destructive/10 rounded-full flex items-center justify-center">
-                  <Zap className="h-8 w-8 text-destructive" />
-                </div>
-                <h3 className="text-xl font-semibold mb-4">Sin visibilidad</h3>
-                <p className="text-muted-foreground">
-                  No sabes qué pasa en tu autoescuela en tiempo real.
-                  Decisiones a ciegas.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+            {/* Main headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+            >
+              La gestión de tu autoescuela,
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                simplificada
+              </span>
+            </motion.h1>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Todo lo que necesitas en una sola plataforma
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Gestión completa para autoescuelas modernas
-            </p>
-          </div>
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-xl sm:text-2xl text-white/80 mb-12 max-w-4xl mx-auto leading-relaxed"
+            >
+              Todo lo que necesitas en una sola plataforma: alumnos, profesores,
+              clases, facturación y fichaje legal. Sin complicaciones.
+            </motion.p>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Users,
-                title: "Alumnos",
-                description: "Matrícula, seguimiento, historial completo"
-              },
-              {
-                icon: GraduationCap,
-                title: "Profesores",
-                description: "Horarios flexibles multi-sede"
-              },
-              {
-                icon: Calendar,
-                title: "Clases",
-                description: "Agenda con disponibilidad automática"
-              },
-              {
-                icon: Car,
-                title: "Vehículos",
-                description: "Flota, costes, amortización, comparador"
-              },
-              {
-                icon: Receipt,
-                title: "Facturación",
-                description: "Facturas, bonos, pagos parciales, PDF"
-              },
-              {
-                icon: Clock,
-                title: "Fichaje legal",
-                description: "Cumple RDL 8/2019, exportable para inspección"
-              },
-              {
-                icon: Inbox,
-                title: "Inbox",
-                description: "WhatsApp, Instagram y email en un solo lugar"
-              },
-              {
-                icon: Building2,
-                title: "Multi-sede",
-                description: "Gestiona todas tus sedes desde una app"
-              }
-            ].map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="pt-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <feature.icon className="h-6 w-6 text-primary" />
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+            >
+              <Button
+                size="lg"
+                onClick={() => scrollToSection('cta-final')}
+                className="text-lg px-8 py-6 bg-white text-slate-900 hover:bg-white/90 transition-all hover:scale-105"
+              >
+                Empezar gratis
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                onClick={() => scrollToSection('features')}
+                className="text-lg px-8 py-6 text-white border-white/20 hover:bg-white/10"
+              >
+                Ver demo
+              </Button>
+            </motion.div>
+
+            {/* Mock Dashboard */}
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.9 }}
+              className="mx-auto max-w-5xl"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent rounded-2xl blur-2xl transform rotate-1" />
+                <div className="relative bg-slate-900/80 backdrop-blur-sm border border-white/20 rounded-2xl p-6 shadow-2xl">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-red-500 rounded-full" />
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+                    <div className="w-3 h-3 bg-green-500 rounded-full" />
                   </div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                      <div className="text-white/60 text-sm mb-2">Alumnos activos</div>
+                      <div className="text-white text-2xl font-bold">247</div>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                      <div className="text-white/60 text-sm mb-2">Clases hoy</div>
+                      <div className="text-white text-2xl font-bold">18</div>
+                    </div>
+                    <div className="bg-slate-800/50 rounded-lg p-4 border border-white/10">
+                      <div className="text-white/60 text-sm mb-2">Ingresos mes</div>
+                      <div className="text-white text-2xl font-bold">€12,450</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="py-16 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="text-slate-600 mb-4">Más de</p>
+            <div className="text-4xl font-bold text-slate-900 mb-2">
+              <AnimatedCounter end={150} />+
+            </div>
+            <p className="text-slate-600">autoescuelas confían en Praxi</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Bento Grid */}
+      <section id="features" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+              Todo lo que necesitas
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Gestión completa para autoescuelas modernas. Cada función diseñada
+              para ahorrarte tiempo y dinero.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          >
+            {/* Large card - Gestión integral */}
+            <motion.div
+              variants={staggerItem}
+              className="md:col-span-2 lg:row-span-2"
+            >
+              <Card className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-8 h-full flex flex-col">
+                  <div className="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center mb-6">
+                    <LayoutDashboard className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-slate-900">Gestión integral</h3>
+                  <p className="text-slate-600 mb-6 flex-grow">
+                    Una plataforma completa que unifica todas las operaciones de tu autoescuela.
+                  </p>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Check className="h-5 w-5 text-green-600" />
+                      <span className="text-slate-700">Dashboard en tiempo real</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Check className="h-5 w-5 text-green-600" />
+                      <span className="text-slate-700">Reportes automatizados</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Check className="h-5 w-5 text-green-600" />
+                      <span className="text-slate-700">Acceso desde cualquier dispositivo</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+            </motion.div>
+
+            {/* Fichaje legal */}
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                    <Clock className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Fichaje legal</h3>
+                  <p className="text-slate-600">Cumple RDL 8/2019. Evita multas desde 626€.</p>
+                  <div className="mt-4 flex items-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="w-6 h-6 border-2 border-green-500 border-t-green-200 rounded-full"
+                    />
+                    <span className="text-sm text-slate-500">Automatizado</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Multi-sede */}
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-4">
+                    <Building2 className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Multi-sede</h3>
+                  <p className="text-slate-600">Gestiona todas tus sedes desde una sola app.</p>
+                  <div className="mt-4 flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <motion.div
+                        key={i}
+                        initial={{ height: 8 }}
+                        animate={{ height: [8, 16, 8] }}
+                        transition={{ duration: 1.5, delay: i * 0.2, repeat: Infinity }}
+                        className="w-2 bg-purple-300 rounded-full"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Facturación */}
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center mb-4">
+                    <Receipt className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Facturación</h3>
+                  <p className="text-slate-600">Facturas, bonos y pagos automatizados.</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Portal alumno */}
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                    <GraduationCap className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Portal alumno</h3>
+                  <p className="text-slate-600">Acceso directo para estudiantes.</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Inbox unificado */}
+            <motion.div variants={staggerItem} className="md:col-span-2">
+              <Card className="h-full bg-gradient-to-r from-emerald-50 to-cyan-50 border-emerald-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                    <Inbox className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Inbox unificado</h3>
+                  <p className="text-slate-600 mb-4">WhatsApp, Instagram y email en un solo lugar.</p>
+                  <div className="flex gap-4">
+                    <MessageCircle className="h-6 w-6 text-green-500" />
+                    <Camera className="h-6 w-6 text-pink-500" />
+                    <Mail className="h-6 w-6 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Horarios inteligentes */}
+            <motion.div variants={staggerItem} className="md:col-span-2">
+              <Card className="h-full bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mb-4">
+                    <Calendar className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">Horarios inteligentes</h3>
+                  <p className="text-slate-600 mb-4">Agenda automática con disponibilidad en tiempo real.</p>
+                  <div className="grid grid-cols-7 gap-1 mt-4">
+                    {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(day => (
+                      <div key={day} className="text-center text-xs text-slate-500 pb-1">{day}</div>
+                    ))}
+                    {Array.from({ length: 7 }).map((_, i) => (
+                      <div key={i} className={`h-6 rounded ${
+                        i < 5 ? 'bg-orange-200' : 'bg-slate-100'
+                      }`} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+              Empezar es muy fácil
+            </h2>
+            <p className="text-xl text-slate-600">
+              Tu autoescuela funcionando en menos de una hora
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid md:grid-cols-3 gap-12 relative"
+          >
+            {/* Connecting lines */}
+            <div className="hidden md:block absolute top-16 left-1/4 right-1/4 h-px bg-slate-200" />
+
+            {[
+              {
+                number: "01",
+                title: "Regístrate",
+                description: "5 minutos, sin instalaciones ni configuraciones complejas."
+              },
+              {
+                number: "02",
+                title: "Configura",
+                description: "Añade sedes, profesores y vehículos. Te ayudamos en el proceso."
+              },
+              {
+                number: "03",
+                title: "Gestiona",
+                description: "Todo desde un solo lugar. Tu autoescuela funcionando al 100%."
+              }
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                variants={staggerItem}
+                className="text-center"
+              >
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-6 relative z-10 bg-white border-4 border-white shadow-lg">
+                  {step.number}
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-4">{step.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{step.description}</p>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Comparison Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              ¿Por qué Praxi?
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+              ¿Por qué cambiar a Praxi?
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid md:grid-cols-3 gap-8"
+          >
             {/* Praxi */}
-            <Card className="relative">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                Recomendado
-              </Badge>
-              <CardContent className="pt-8">
-                <h3 className="text-xl font-bold text-center mb-6">Praxi</h3>
-                <ul className="space-y-3">
-                  {[
-                    "Cloud nativo",
-                    "Multi-sede incluido",
-                    "Fichaje legal incluido",
-                    "Portal alumno incluido",
-                    "Inbox unificado",
-                    "Precio transparente"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <motion.div variants={staggerItem}>
+              <Card className="relative h-full border-2 border-blue-200 bg-gradient-to-b from-blue-50 to-white">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white">
+                  Recomendado
+                </Badge>
+                <CardContent className="pt-8 pb-6">
+                  <h3 className="text-2xl font-bold text-center mb-6 text-slate-900">Praxi</h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Cloud nativo",
+                      "Multi-sede incluido",
+                      "Fichaje legal incluido",
+                      "Portal alumno incluido",
+                      "Inbox unificado",
+                      "Precio transparente"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
+                        <span className="text-slate-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Excel */}
-            <Card>
-              <CardContent className="pt-8">
-                <h3 className="text-xl font-bold text-center mb-6">Excel</h3>
-                <ul className="space-y-3">
-                  {[
-                    "Solo local",
-                    "Una sede máximo",
-                    "Sin fichaje legal",
-                    "Sin portal alumno",
-                    "Sin comunicación",
-                    "Gratis (pero sin control)"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <X className="h-5 w-5 text-destructive mr-3 flex-shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200">
+                <CardContent className="pt-8 pb-6">
+                  <h3 className="text-2xl font-bold text-center mb-6 text-slate-900">Excel</h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Solo local",
+                      "Una sede máximo",
+                      "Sin fichaje legal",
+                      "Sin portal alumno",
+                      "Sin comunicación",
+                      "Gratis (pero sin control)"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <X className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
+                        <span className="text-slate-500">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Software tradicional */}
-            <Card>
-              <CardContent className="pt-8">
-                <h3 className="text-xl font-bold text-center mb-6">Software tradicional</h3>
-                <ul className="space-y-3">
-                  {[
-                    "Instalación desktop",
-                    "Multi-sede: coste extra",
-                    "Fichaje: coste extra",
-                    "Portal: coste extra",
-                    "Inbox: no incluido",
-                    "Módulos separados"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <X className="h-5 w-5 text-destructive mr-3 flex-shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-white border-slate-200">
+                <CardContent className="pt-8 pb-6">
+                  <h3 className="text-2xl font-bold text-center mb-6 text-slate-900">Software tradicional</h3>
+                  <ul className="space-y-3">
+                    {[
+                      "Instalación desktop",
+                      "Multi-sede: coste extra",
+                      "Fichaje: coste extra",
+                      "Portal: coste extra",
+                      "Inbox: no incluido",
+                      "Módulos separados"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <X className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
+                        <span className="text-slate-500">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+      <section id="pricing" className="py-24 bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
               Precios sencillos, sin sorpresas
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-white/70">
               Todos los planes incluyen: fichaje legal, portal alumno, soporte técnico
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid md:grid-cols-3 gap-8"
+          >
             {/* Starter */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold mb-2">Starter</h3>
-                  <p className="text-muted-foreground mb-4">Para una sede</p>
-                  <div className="text-3xl font-bold">
-                    Próximamente
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <CardContent className="pt-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold mb-2 text-white">Starter</h3>
+                    <p className="text-slate-400 mb-4">1 sede, hasta 50 alumnos</p>
+                    <div className="text-3xl font-bold text-white">
+                      Desde 29€<span className="text-lg text-slate-400">/mes</span>
+                    </div>
                   </div>
-                </div>
-                <ul className="space-y-3">
-                  {[
-                    "Hasta 100 alumnos",
-                    "1 sede",
-                    "Fichaje legal incluido",
-                    "Portal alumno",
-                    "Soporte email"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button className="w-full mt-6" variant="outline" disabled>
-                  Próximamente
-                </Button>
-              </CardContent>
-            </Card>
+                  <ul className="space-y-3">
+                    {[
+                      "Hasta 50 alumnos",
+                      "1 sede",
+                      "Fichaje legal incluido",
+                      "Portal alumno",
+                      "Soporte email"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                        <span className="text-slate-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full mt-6 bg-white/10 text-white border-white/20 hover:bg-white/20">
+                    Próximamente
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Profesional */}
-            <Card className="relative">
-              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                Más popular
-              </Badge>
-              <CardContent className="pt-8">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold mb-2">Profesional</h3>
-                  <p className="text-muted-foreground mb-4">Multi-sede</p>
-                  <div className="text-3xl font-bold">
-                    Consultar
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-gradient-to-b from-blue-600 to-blue-700 border-blue-500 relative transform scale-105">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-blue-600">
+                  Más popular
+                </Badge>
+                <CardContent className="pt-8">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold mb-2 text-white">Profesional</h3>
+                    <p className="text-blue-100 mb-4">Multi-sede, alumnos ilimitados</p>
+                    <div className="text-3xl font-bold text-white">
+                      Desde 49€<span className="text-lg text-blue-200">/mes</span>
+                    </div>
                   </div>
-                </div>
-                <ul className="space-y-3">
-                  {[
-                    "Alumnos ilimitados",
-                    "Sedes ilimitadas",
-                    "Inbox unificado",
-                    "Fichaje legal incluido",
-                    "Portal alumno",
-                    "Soporte prioritario"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button className="w-full mt-6" onClick={() => scrollToSection('cta-final')}>
-                  Solicitar demo
-                </Button>
-              </CardContent>
-            </Card>
+                  <ul className="space-y-3">
+                    {[
+                      "Alumnos ilimitados",
+                      "Sedes ilimitadas",
+                      "Inbox unificado",
+                      "Fichaje legal incluido",
+                      "Portal alumno",
+                      "Soporte prioritario"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
+                        <span className="text-blue-100">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full mt-6 bg-white text-blue-600 hover:bg-blue-50"
+                    onClick={() => scrollToSection('cta-final')}
+                  >
+                    Solicitar demo
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Enterprise */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold mb-2">Enterprise</h3>
-                  <p className="text-muted-foreground mb-4">A medida</p>
-                  <div className="text-3xl font-bold">
-                    Contactar
+            <motion.div variants={staggerItem}>
+              <Card className="h-full bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <CardContent className="pt-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-xl font-bold mb-2 text-white">Enterprise</h3>
+                    <p className="text-slate-400 mb-4">Personalizado para tu negocio</p>
+                    <div className="text-3xl font-bold text-white">
+                      Contactar
+                    </div>
                   </div>
-                </div>
-                <ul className="space-y-3">
-                  {[
-                    "Todo lo de Profesional",
-                    "Integraciones personalizadas",
-                    "API access",
-                    "Soporte dedicado",
-                    "Formación incluida",
-                    "SLA garantizado"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center">
-                      <Check className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button className="w-full mt-6" variant="outline" onClick={() => scrollToSection('contact')}>
-                  Contactar
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+                  <ul className="space-y-3">
+                    {[
+                      "Todo lo de Profesional",
+                      "Integraciones personalizadas",
+                      "API access",
+                      "Soporte dedicado",
+                      "Formación incluida",
+                      "SLA garantizado"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-center">
+                        <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                        <span className="text-slate-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full mt-6 bg-white/10 text-white border-white/20 hover:bg-white/20"
+                    onClick={() => scrollToSection('contact')}
+                  >
+                    Contactar
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Final CTA Section */}
-      <section id="cta-final" className="py-20 px-4 sm:px-6 lg:px-8 bg-primary/5">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
-            ¿Listo para modernizar tu autoescuela?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-10">
-            Prueba Praxi gratis durante 14 días. Sin compromiso.
-          </p>
-          <Button size="lg" className="text-lg px-10 py-4 mb-6">
-            Solicitar demo gratuita
-          </Button>
-          <p className="text-muted-foreground">
-            ¿Preguntas? Llámanos al <strong>XXX XXX XXX</strong>
-          </p>
+      <section id="cta-final" className="py-24 bg-gradient-to-r from-blue-600 to-indigo-600">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+              ¿Listo para modernizar tu autoescuela?
+            </h2>
+            <p className="text-xl text-blue-100 mb-10">
+              Únete a más de 150 autoescuelas que ya confían en Praxi.
+              Sin compromiso. Cancela cuando quieras.
+            </p>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                size="lg"
+                className="text-lg px-12 py-6 bg-white text-blue-600 hover:bg-blue-50 mb-6 shadow-xl"
+              >
+                Empezar gratis hoy
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
+            <p className="text-blue-200 text-sm">
+              14 días gratis • Sin tarjeta de crédito • Configuración en 5 minutos
+            </p>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-muted py-16 px-4 sm:px-6 lg:px-8">
+      <footer id="contact" className="bg-slate-950 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <Link href="/" className="text-2xl font-bold text-primary mb-4 block">
-                Praxi
-              </Link>
-              <p className="text-muted-foreground mb-4 max-w-md">
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="footer-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{stopColor:"#4f46e5"}} />
+                      <stop offset="100%" style={{stopColor:"#3b38f7"}} />
+                    </linearGradient>
+                  </defs>
+                  <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#footer-logo-gradient)" />
+                  <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
+                  <circle cx="15" cy="75" r="3" fill="#4f46e5" opacity="0.8" />
+                  <circle cx="35" cy="68" r="2" fill="#4f46e5" opacity="0.6" />
+                  <circle cx="55" cy="75" r="2.5" fill="#4f46e5" opacity="0.7" />
+                  <circle cx="75" cy="68" r="2" fill="#4f46e5" opacity="0.5" />
+                </svg>
+                <span className="text-2xl font-bold text-white">Praxi</span>
+              </div>
+              <p className="text-slate-400 mb-6 max-w-md leading-relaxed">
                 Software de gestión de autoescuelas. Moderno, completo y fácil de usar.
+                Simplificamos la gestión para que te centres en enseñar.
               </p>
-              <div className="flex items-center text-sm text-muted-foreground">
+              <div className="flex items-center text-sm text-slate-400">
                 <Smartphone className="h-4 w-4 mr-2" />
                 Disponible como PWA en todos los dispositivos
               </div>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Producto</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><button onClick={() => scrollToSection('features')}>Funcionalidades</button></li>
-                <li><button onClick={() => scrollToSection('pricing')}>Precios</button></li>
-                <li><a href="#" className="hover:text-foreground">Blog</a></li>
+              <h4 className="font-semibold mb-4 text-white">Producto</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li><button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">Funcionalidades</button></li>
+                <li><button onClick={() => scrollToSection('pricing')} className="hover:text-white transition-colors">Precios</button></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Aviso legal</a></li>
-                <li><a href="#" className="hover:text-foreground">Política de privacidad</a></li>
-                <li><a href="#" className="hover:text-foreground">Política de cookies</a></li>
+              <h4 className="font-semibold mb-4 text-white">Empresa</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li><a href="#" className="hover:text-white transition-colors">Aviso legal</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Política de privacidad</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Política de cookies</a></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground">
-            <p>© 2026 Praxi — Software de gestión de autoescuelas</p>
+          <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center">
+            <p className="text-slate-400">© 2026 Praxi — Software de gestión de autoescuelas</p>
+            <div className="flex items-center gap-4 mt-4 sm:mt-0">
+              <Star className="h-5 w-5 text-yellow-400 fill-current" />
+              <span className="text-slate-400 text-sm">Hecho con ❤️ en España</span>
+            </div>
           </div>
         </div>
       </footer>
