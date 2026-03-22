@@ -148,6 +148,15 @@
   --shadow-2xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.25);
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -157,5 +166,11 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
   }
 }

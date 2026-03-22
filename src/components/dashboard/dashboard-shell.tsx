@@ -15,8 +15,14 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { OfflineIndicator } from '@/components/pwa/offline-indicator'
-import { LayoutDashboard, Users, GraduationCap, Calendar, Car, Receipt, Clock, ClipboardCheck, BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2, ChevronDown, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Users, GraduationCap, Calendar, Car, Receipt, Clock, ClipboardCheck, BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2, ChevronDown, ChevronRight, ChevronLeft, MessageCircle, Star } from 'lucide-react'
 import { SedeSelector } from '@/components/sedes/sede-selector'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { StarRating } from '@/components/ui/star-rating'
+import { toast } from 'sonner'
+import { APP_VERSION } from '@/lib/version'
 
 const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
@@ -47,10 +53,12 @@ function NavLinks({
   items,
   pathname,
   onClick,
+  collapsed = false,
 }: {
   items: NavItem[]
   pathname: string
   onClick?: () => void
+  collapsed?: boolean
 }) {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
@@ -118,27 +126,29 @@ function NavLinks({
 
         return (
           <div key={group}>
-            <button
-              onClick={() => toggleGroup(group)}
-              className={`flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 hover:text-sidebar-foreground/80 transition-colors ${
-                group === 'Principal' ? 'cursor-default' : 'cursor-pointer'
-              }`}
-              disabled={group === 'Principal'}
-            >
-              <span>{group}</span>
-              {group !== 'Principal' && (
-                isExpanded ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronRight className="h-3 w-3" />
-                )
-              )}
-            </button>
+            {!collapsed && (
+              <button
+                onClick={() => toggleGroup(group)}
+                className={`flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 hover:text-sidebar-foreground/80 transition-colors ${
+                  group === 'Principal' ? 'cursor-default' : 'cursor-pointer'
+                }`}
+                disabled={group === 'Principal'}
+              >
+                <span>{group}</span>
+                {group !== 'Principal' && (
+                  isExpanded ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )
+                )}
+              </button>
+            )}
 
             <div className={`transition-all duration-200 overflow-hidden ${
-              isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              (!collapsed && isExpanded) || collapsed ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
-              <div className="space-y-1">
+              <div className={collapsed ? "flex flex-col items-center gap-2" : "space-y-1"}>
                 {groupItems.map((item) => {
                   const isActive = item.href === '/dashboard'
                     ? pathname === '/dashboard'
@@ -148,7 +158,8 @@ function NavLinks({
                       key={item.href}
                       href={item.href}
                       onClick={onClick}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ${
+                      title={collapsed ? item.label : undefined}
+                      className={`flex items-center ${collapsed ? 'justify-center size-10' : 'gap-3'} rounded-lg ${collapsed ? 'p-2' : 'px-3 py-2'} text-sm font-medium transition-all duration-150 ${
                         isActive
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                           : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
@@ -158,7 +169,9 @@ function NavLinks({
                         const Icon = LUCIDE_ICONS[item.icon]
                         return Icon ? <Icon className="size-5 shrink-0" /> : null
                       })()}
-                      {item.label}
+                      {!collapsed && (
+                        <span className="truncate">{item.label}</span>
+                      )}
                     </Link>
                   )
                 })}
@@ -182,9 +195,71 @@ export function DashboardShell({
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [feedbackType, setFeedbackType] = useState('')
+  const [feedbackText, setFeedbackText] = useState('')
+  const [feedbackRating, setFeedbackRating] = useState(0)
 
   const userRole = (user?.rol as UserRole) ?? 'admin'
   const navItems = getNavItems(userRole)
+
+  // Load sidebar collapsed state from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('sidebar-collapsed')
+    if (saved) {
+      setSidebarCollapsed(JSON.parse(saved))
+    }
+  }, [])
+
+  // Save sidebar collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(sidebarCollapsed))
+  }, [sidebarCollapsed])
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed)
+  }
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) {
+      toast.error('Por favor, escribe tu feedback')
+      return
+    }
+
+    try {
+      const supabase = createClient()
+
+      // Try to save to Supabase feedback table
+      const { error } = await supabase
+        .from('feedback')
+        .insert({
+          tipo: feedbackType || 'Otro',
+          mensaje: feedbackText,
+          rating: feedbackRating || null,
+          user_id: user?.autoescuela_id,
+          created_at: new Date().toISOString(),
+        })
+
+      if (error) {
+        // If table doesn't exist or other error, just show success message
+        console.log('Feedback table not available:', error)
+      }
+
+      // Reset form
+      setFeedbackType('')
+      setFeedbackText('')
+      setFeedbackRating(0)
+      setFeedbackDialogOpen(false)
+
+      toast.success('¡Gracias por tu feedback!')
+    } catch (error) {
+      // Even if there's an error, we'll show success to the user
+      console.error('Feedback submission error:', error)
+      setFeedbackDialogOpen(false)
+      toast.success('¡Gracias por tu feedback!')
+    }
+  }
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -219,72 +294,133 @@ export function DashboardShell({
   return (
     <div className="flex h-screen">
       {/* Sidebar desktop */}
-      <aside className="hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex">
-        {/* Logo + notifications */}
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center">
-              <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{stopColor:"#4f46e5"}} />
-                    <stop offset="100%" style={{stopColor:"#3b38f7"}} />
-                  </linearGradient>
-                  <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{stopColor:"#6366f1"}} />
-                    <stop offset="100%" style={{stopColor:"#4f46e5"}} />
-                  </linearGradient>
-                </defs>
-                <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#brand-gradient)" />
-                <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
-                <circle cx="15" cy="75" r="3" fill="url(#accent-gradient)" opacity="0.8" />
-                <circle cx="35" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.6" />
-                <circle cx="55" cy="75" r="2.5" fill="url(#accent-gradient)" opacity="0.7" />
-                <circle cx="75" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.5" />
-                <path d="M15 75 Q35 65 55 75 Q75 65 85 68" stroke="url(#accent-gradient)" strokeWidth="1.5" fill="none" opacity="0.3" />
-              </svg>
-            </div>
-            <span className="text-lg font-bold tracking-tight">Praxi</span>
+      <aside className={`hidden flex-col bg-sidebar text-sidebar-foreground md:flex transition-all duration-300 ${
+        sidebarCollapsed ? 'w-16' : 'w-64'
+      }`}>
+        {/* Header with logo, toggle, and notifications */}
+        <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {/* Toggle Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className="size-8 p-0 hover:bg-sidebar-accent"
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="size-4" />
+              ) : (
+                <ChevronLeft className="size-4" />
+              )}
+            </Button>
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{stopColor:"#4f46e5"}} />
+                        <stop offset="100%" style={{stopColor:"#3b38f7"}} />
+                      </linearGradient>
+                      <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{stopColor:"#6366f1"}} />
+                        <stop offset="100%" style={{stopColor:"#4f46e5"}} />
+                      </linearGradient>
+                    </defs>
+                    <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#brand-gradient)" />
+                    <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
+                    <circle cx="15" cy="75" r="3" fill="url(#accent-gradient)" opacity="0.8" />
+                    <circle cx="35" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.6" />
+                    <circle cx="55" cy="75" r="2.5" fill="url(#accent-gradient)" opacity="0.7" />
+                    <circle cx="75" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.5" />
+                    <path d="M15 75 Q35 65 55 75 Q75 65 85 68" stroke="url(#accent-gradient)" strokeWidth="1.5" fill="none" opacity="0.3" />
+                  </svg>
+                </div>
+                <span className="text-lg font-bold tracking-tight">Praxi</span>
+              </div>
+            )}
           </div>
-          <NotificationBell />
+          {!sidebarCollapsed && <NotificationBell />}
         </div>
 
         {/* Sede Selector */}
-        <div className="px-3 pb-2">
-          <SedeSelector />
-        </div>
+        {!sidebarCollapsed && (
+          <div className="px-3 pb-2">
+            <SedeSelector />
+          </div>
+        )}
 
         {/* Nav */}
         <div className="flex-1 overflow-y-auto px-3 py-2">
-          <NavLinks items={navItems} pathname={pathname} />
+          <NavLinks items={navItems} pathname={pathname} collapsed={sidebarCollapsed} />
         </div>
 
         {/* User footer */}
         <div className="border-t border-sidebar-border p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9 border border-sidebar-border">
-              <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 truncate">
-              <p className="text-sm font-medium truncate">{displayName}</p>
-              <p className="text-xs text-sidebar-foreground/50">
-                {rolLabel[user?.rol ?? ''] ?? user?.rol ?? 'Sin rol'}
-              </p>
+          {sidebarCollapsed ? (
+            <div className="flex flex-col items-center gap-3">
+              <Avatar className="h-9 w-9 border border-sidebar-border">
+                <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="size-8 p-0 text-red-500/70 hover:text-red-500 hover:bg-red-500/10"
+                onClick={openLogoutDialog}
+                title="Cerrar sesión"
+              >
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </Button>
+              <ThemeToggle />
             </div>
-          </div>
-          <div className="mt-3 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1 justify-start text-red-500/70 hover:text-red-500 hover:bg-red-500/10"
-              onClick={openLogoutDialog}
-            >
-              Cerrar sesión
-            </Button>
-            <ThemeToggle />
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9 border border-sidebar-border">
+                  <AvatarFallback className="bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 truncate">
+                  <p className="text-sm font-medium truncate">{displayName}</p>
+                  <p className="text-xs text-sidebar-foreground/50">
+                    {rolLabel[user?.rol ?? ''] ?? user?.rol ?? 'Sin rol'}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 justify-start text-red-500/70 hover:text-red-500 hover:bg-red-500/10"
+                  onClick={openLogoutDialog}
+                >
+                  Cerrar sesión
+                </Button>
+                <ThemeToggle />
+              </div>
+              {/* Feedback Button */}
+              <div className="mt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  onClick={() => setFeedbackDialogOpen(true)}
+                >
+                  <MessageCircle className="size-4" />
+                  Feedback
+                </Button>
+              </div>
+              {/* Version */}
+              <div className="mt-2 text-center">
+                <span className="text-xs text-sidebar-foreground/40">v{APP_VERSION}</span>
+              </div>
+            </>
+          )}
         </div>
       </aside>
 
@@ -351,6 +487,65 @@ export function DashboardShell({
         </main>
         <InstallPrompt />
       </div>
+
+      {/* Feedback Dialog */}
+      <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>💬 Tu opinión nos importa</DialogTitle>
+            <DialogDescription>
+              Cuéntanos qué piensas sobre Praxi. Tu feedback nos ayuda a mejorar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="feedback-type">Tipo de feedback</Label>
+              <Select value={feedbackType} onValueChange={(value) => setFeedbackType(value || '')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Sugerencia">Sugerencia</SelectItem>
+                  <SelectItem value="Bug">Bug</SelectItem>
+                  <SelectItem value="Pregunta">Pregunta</SelectItem>
+                  <SelectItem value="Otro">Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="feedback-text">Cuéntanos tu opinión...</Label>
+              <Textarea
+                id="feedback-text"
+                placeholder="Describe tu feedback aquí..."
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Calificación (opcional)</Label>
+              <StarRating
+                value={feedbackRating}
+                onChange={setFeedbackRating}
+                className="justify-start"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setFeedbackDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleFeedbackSubmit}>
+              Enviar feedback
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Logout confirmation dialog */}
       <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>

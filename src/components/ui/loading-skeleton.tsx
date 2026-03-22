@@ -1,3 +1,5 @@
+import { Loader } from "./loader"
+
 export function LoadingSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
@@ -40,3 +42,6 @@ export function LoadingSkeleton() {
     </div>
   )
 }
+
+// For backwards compatibility, keep the old LoadingSkeleton but also provide new PageLoader
+export { PageLoader } from './loader'
