@@ -1,213 +1,322 @@
 "use client"
 
-import * as React from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Clock,
-  LogIn,
-  LogOut,
   Users,
-  UserX,
-  CalendarDays,
-  X,
+  Settings,
+  Calendar,
+  AlertTriangle,
+  Shield,
+  Download,
+  Eye
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { EMPLEADOS } from "@/components/fichajes/mock-data"
-import type { Fichaje } from "@/components/fichajes/types"
-import { es } from "react-day-picker/locale"
-import { useSupabaseQuery } from "@/hooks/use-supabase-query"
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
-import { getFichajes, createFichaje, getUserProfile } from "@/lib/services/fichajes"
-import { RequireWrite } from "@/components/auth/require-write"
-import { ExportButton } from "@/components/ui/export-button"
-import { exportToCSV, exportFormatDate } from "@/lib/export"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { useUserRole } from "@/hooks/use-user-role"
 import { useSede } from "@/hooks/use-sede"
 
-function formatTime(isoStr: string) {
-  return new Date(isoStr).toLocaleTimeString("es-ES", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
+// Import new components
+import { RelojFichar } from "@/components/fichajes/reloj-fichar"
+import { TimelineDia } from "@/components/fichajes/timeline-dia"
+import { ResumenSemana } from "@/components/fichajes/resumen-semana"
+import { IncidenciaFormDialog } from "@/components/fichajes/incidencia-form-dialog"
+import { AdminFichajesTable } from "@/components/fichajes/admin-fichajes-table"
+import { RequireWrite } from "@/components/auth/require-write"
+import { exportToCSV, exportFormatDate } from "@/lib/export"
 
-function formatDateTime(isoStr: string) {
-  return new Date(isoStr).toLocaleString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
+// Import types
+import {
+  RegistroFichaje,
+  Incidencia,
+  TipoRegistro,
+  TipoPausa,
+  EstadoEmpleado,
+  TipoIncidencia
+} from "@/components/fichajes/types"
 
-function isSameDay(d1: Date, d2: Date) {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  )
+// Mock data for demonstration
+const MOCK_EMPLEADOS = [
+  { id: "1", nombre: "Miguel Santos Rivas" },
+  { id: "2", nombre: "Ana García López" },
+  { id: "3", nombre: "Carlos Ruiz Martín" },
+  { id: "4", nombre: "Elena Fernández Torres" },
+  { id: "5", nombre: "David Pérez Gómez" },
+  { id: "6", nombre: "Sara Moreno Silva" },
+  { id: "7", nombre: "Javier López Díaz" },
+  { id: "8", nombre: "Carmen Rodríguez Vega" }
+]
+
+// Generate realistic demo data
+function generateMockData() {
+  const registros: RegistroFichaje[] = []
+  const incidencias: Incidencia[] = []
+  const today = new Date().toISOString().split('T')[0]
+
+  // Generate realistic work patterns for each employee
+  MOCK_EMPLEADOS.forEach((empleado, index) => {
+    // Some employees work different patterns
+    const isPartTime = index === 5 || index === 6
+    const isLateStarter = index === 3
+
+    // Generate registros for today
+    if (Math.random() > 0.1) { // 90% chance employee worked today
+      let currentTime = new Date(today + "T" + (isLateStarter ? "09:30:00" : "08:45:00"))
+
+      // Morning entrance
+      registros.push({
+        id: `reg_${empleado.id}_1`,
+        usuario_id: empleado.id,
+        usuario_nombre: empleado.nombre,
+        tipo: "entrada",
+        timestamp: currentTime.toISOString(),
+        sede_id: "1",
+        metodo: Math.random() > 0.5 ? "app" : "manual",
+        tipo_pausa: null,
+        notas: null
+      })
+
+      // Coffee break
+      if (!isPartTime) {
+        currentTime = new Date(currentTime.getTime() + (2.5 * 60 * 60 * 1000)) // +2.5 hours
+        registros.push({
+          id: `reg_${empleado.id}_2`,
+          usuario_id: empleado.id,
+          usuario_nombre: empleado.nombre,
+          tipo: "pausa_inicio",
+          timestamp: currentTime.toISOString(),
+          sede_id: "1",
+          metodo: "app",
+          tipo_pausa: "cafe",
+          notas: null
+        })
+
+        // End coffee break
+        currentTime = new Date(currentTime.getTime() + (15 * 60 * 1000)) // +15 minutes
+        registros.push({
+          id: `reg_${empleado.id}_3`,
+          usuario_id: empleado.id,
+          usuario_nombre: empleado.nombre,
+          tipo: "pausa_fin",
+          timestamp: currentTime.toISOString(),
+          sede_id: "1",
+          metodo: "app",
+          tipo_pausa: null,
+          notas: null
+        })
+      }
+
+      // Lunch break
+      currentTime = new Date(today + "T14:00:00")
+      registros.push({
+        id: `reg_${empleado.id}_4`,
+        usuario_id: empleado.id,
+        usuario_nombre: empleado.nombre,
+        tipo: "pausa_inicio",
+        timestamp: currentTime.toISOString(),
+        sede_id: "1",
+        metodo: "app",
+        tipo_pausa: "comida",
+        notas: null
+      })
+
+      // End lunch break
+      currentTime = new Date(currentTime.getTime() + (60 * 60 * 1000)) // +1 hour
+      registros.push({
+        id: `reg_${empleado.id}_5`,
+        usuario_id: empleado.id,
+        usuario_nombre: empleado.nombre,
+        tipo: "pausa_fin",
+        timestamp: currentTime.toISOString(),
+        sede_id: "1",
+        metodo: "app",
+        tipo_pausa: null,
+        notas: null
+      })
+
+      // End of day (only if still working)
+      if (index < 4) { // First 4 employees have already left
+        const endTime = isPartTime ? "16:00:00" : "17:30:00"
+        currentTime = new Date(today + "T" + endTime)
+        registros.push({
+          id: `reg_${empleado.id}_6`,
+          usuario_id: empleado.id,
+          usuario_nombre: empleado.nombre,
+          tipo: "salida",
+          timestamp: currentTime.toISOString(),
+          sede_id: "1",
+          metodo: "app",
+          tipo_pausa: null,
+          notas: null
+        })
+      }
+    }
+
+    // Generate some incidencias
+    if (Math.random() > 0.8) { // 20% chance of having an incidencia
+      const tipos: TipoIncidencia[] = ["llegada_tarde", "ausencia_justificada", "teletrabajo"]
+      const tipoRandom = tipos[Math.floor(Math.random() * tipos.length)]
+
+      incidencias.push({
+        id: `inc_${empleado.id}`,
+        usuario_id: empleado.id,
+        usuario_nombre: empleado.nombre,
+        fecha: today,
+        tipo: tipoRandom,
+        descripcion: tipoRandom === "llegada_tarde" ? "Retraso por tráfico" :
+                    tipoRandom === "ausencia_justificada" ? "Cita médica programada" :
+                    "Trabajo remoto autorizado por supervisor",
+        aprobada: Math.random() > 0.5 ? true : null
+      })
+    }
+  })
+
+  return { registros, incidencias }
 }
 
 export default function FichajesPage() {
-  const { data: sbFichajes, loading: loadingFichajes, refetch } = useSupabaseQuery(() => getFichajes())
-  const { data: userProfile } = useSupabaseQuery(() => getUserProfile())
+  const userRole = useUserRole()
   const { selectedSede } = useSede()
+  const [activeTab, setActiveTab] = useState<"empleado" | "admin">("empleado")
 
-  const [fichajes, setFichajes] = React.useState<Fichaje[]>([])
+  // Mock state management
+  const [mockData, setMockData] = useState(() => generateMockData())
+  const [currentUserId] = useState("1") // Miguel Santos Rivas for demo
+  const fechaHoy = new Date().toISOString().split('T')[0]
 
-  React.useEffect(() => { if (sbFichajes) setFichajes(sbFichajes) }, [sbFichajes])
+  // Calculate current employee state
+  const estadoEmpleadoActual = useMemo((): {
+    estado: EstadoEmpleado
+    horaEntrada?: string
+    horaPausa?: string
+    tipoPausa?: TipoPausa
+  } => {
+    const registrosHoy = mockData.registros
+      .filter(r => r.usuario_id === currentUserId && r.timestamp.startsWith(fechaHoy))
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
-  const [fechaFiltro, setFechaFiltro] = React.useState<Date>(new Date())
-  const [empleadoFiltro, setEmpleadoFiltro] = React.useState<string>("todos")
-  const [calendarOpen, setCalendarOpen] = React.useState(false)
-  const [horaActual, setHoraActual] = React.useState(new Date())
+    let estado: EstadoEmpleado = "fuera"
+    let horaEntrada: string | undefined
+    let horaPausa: string | undefined
+    let tipoPausa: TipoPausa | undefined
 
-  if (loadingFichajes) return <LoadingSkeleton />
-
-  // Reloj en tiempo real
-  React.useEffect(() => {
-    const interval = setInterval(() => setHoraActual(new Date()), 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  // Cerrar calendario al hacer clic fuera
-  const calendarRef = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        calendarRef.current &&
-        !calendarRef.current.contains(e.target as Node)
-      ) {
-        setCalendarOpen(false)
-      }
-    }
-    if (calendarOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [calendarOpen])
-
-  // Determinar si el último fichaje del "usuario actual" (Miguel Santos - admin) es entrada o salida
-  const currentUserName = userProfile?.nombre ?? "Miguel"
-  const currentUserApellidos = userProfile?.apellidos ?? "Santos Rivas"
-
-  const ultimoFichajePropio = React.useMemo(() => {
-    const propios = fichajes
-      .filter(
-        (f) =>
-          f.usuario_nombre === currentUserName &&
-          f.usuario_apellidos === currentUserApellidos
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-    return propios[0] ?? null
-  }, [fichajes, currentUserName, currentUserApellidos])
-
-  const siguienteTipo =
-    !ultimoFichajePropio || ultimoFichajePropio.tipo === "salida"
-      ? "entrada"
-      : "salida"
-
-  // Fichajes filtrados por fecha y empleado
-  const fichajesFiltrados = React.useMemo(() => {
-    return fichajes
-      .filter((f) => {
-        const matchFecha = isSameDay(new Date(f.timestamp), fechaFiltro)
-        const matchEmpleado =
-          empleadoFiltro === "todos" ||
-          `${f.usuario_nombre} ${f.usuario_apellidos}` === empleadoFiltro
-        return matchFecha && matchEmpleado
+    for (const registro of registrosHoy) {
+      const hora = new Date(registro.timestamp).toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit"
       })
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-  }, [fichajes, fechaFiltro, empleadoFiltro])
 
-  // Stats del día seleccionado
-  const fichajesDelDia = React.useMemo(() => {
-    return fichajes.filter((f) =>
-      isSameDay(new Date(f.timestamp), fechaFiltro)
-    )
-  }, [fichajes, fechaFiltro])
-
-  const stats = React.useMemo(() => {
-    const empleadosFichados = new Set(
-      fichajesDelDia.map((f) => `${f.usuario_nombre} ${f.usuario_apellidos}`)
-    )
-    const entradas = fichajesDelDia.filter((f) => f.tipo === "entrada").length
-    const salidas = fichajesDelDia.filter((f) => f.tipo === "salida").length
-    const sinFichar = EMPLEADOS.length - empleadosFichados.size
-
-    return {
-      empleadosFichados: empleadosFichados.size,
-      entradas,
-      salidas,
-      sinFichar,
-    }
-  }, [fichajesDelDia])
-
-  async function handleFichar() {
-    try {
-      if (userProfile) {
-        await createFichaje({
-          usuario_id: userProfile.id,
-          tipo: siguienteTipo,
-          metodo: "app",
-          sede_id: selectedSede || "",
-        })
-        toast.success(`Fichaje de ${siguienteTipo} registrado`)
-        refetch()
-      } else {
-        // Fallback to local state
-        const nuevoFichaje: Fichaje = {
-          id: `f${Date.now()}`,
-          usuario_nombre: "Miguel",
-          usuario_apellidos: "Santos Rivas",
-          usuario_rol: "admin",
-          tipo: siguienteTipo,
-          timestamp: new Date().toISOString(),
-          metodo: "app",
-          sede_id: "1", // Default to Central sede
-        }
-        setFichajes((prev) => [nuevoFichaje, ...prev])
-        toast.success(`Fichaje de ${siguienteTipo} registrado`)
+      if (registro.tipo === "entrada") {
+        if (!horaEntrada) horaEntrada = hora
+        estado = "trabajando"
+        horaPausa = undefined
+        tipoPausa = undefined
+      } else if (registro.tipo === "salida") {
+        estado = "fuera"
+        horaEntrada = undefined
+        horaPausa = undefined
+        tipoPausa = undefined
+      } else if (registro.tipo === "pausa_inicio") {
+        estado = "en_pausa"
+        horaPausa = hora
+        tipoPausa = registro.tipo_pausa || "otro"
+      } else if (registro.tipo === "pausa_fin") {
+        estado = "trabajando"
+        horaPausa = undefined
+        tipoPausa = undefined
       }
-    } catch {
-      toast.error("Error al registrar el fichaje")
     }
+
+    return { estado, horaEntrada, horaPausa, tipoPausa }
+  }, [mockData.registros, currentUserId, fechaHoy])
+
+  const handleFichar = (tipo: TipoRegistro, tipoPausa?: TipoPausa) => {
+    const nuevoRegistro: RegistroFichaje = {
+      id: `reg_${Date.now()}`,
+      usuario_id: currentUserId,
+      usuario_nombre: "Miguel Santos Rivas",
+      tipo,
+      timestamp: new Date().toISOString(),
+      sede_id: selectedSede || "1",
+      metodo: "app",
+      tipo_pausa: tipoPausa || null,
+      notas: null
+    }
+
+    setMockData(prev => ({
+      ...prev,
+      registros: [nuevoRegistro, ...prev.registros]
+    }))
+
+    const accionTexto = tipo === "entrada" ? "entrada" :
+                      tipo === "salida" ? "salida" :
+                      tipo === "pausa_inicio" ? `inicio de pausa (${tipoPausa})` :
+                      "fin de pausa"
+
+    toast.success(`Fichaje de ${accionTexto} registrado`)
   }
 
-  const hasActiveFilters =
-    !isSameDay(fechaFiltro, new Date()) || empleadoFiltro !== "todos"
+  const handleIncidencia = (incidencia: Omit<Incidencia, "id" | "aprobada">) => {
+    const nuevaIncidencia: Incidencia = {
+      ...incidencia,
+      id: `inc_${Date.now()}`,
+      aprobada: null
+    }
 
-  const fechaFiltroLabel = fechaFiltro.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
+    setMockData(prev => ({
+      ...prev,
+      incidencias: [nuevaIncidencia, ...prev.incidencias]
+    }))
+  }
 
-  const esHoy = isSameDay(fechaFiltro, new Date())
+  const handleExportCSV = () => {
+    const fechaActual = new Date().toISOString().split('T')[0]
+    const registrosFecha = mockData.registros.filter(r => r.timestamp.startsWith(fechaActual))
+
+    exportToCSV(
+      registrosFecha.map((r) => ({
+        empleado: r.usuario_nombre,
+        fecha: exportFormatDate(r.timestamp),
+        hora: new Date(r.timestamp).toLocaleTimeString("es-ES", {
+          hour: "2-digit",
+          minute: "2-digit"
+        }),
+        tipo: r.tipo === "entrada" ? "Entrada" :
+              r.tipo === "salida" ? "Salida" :
+              r.tipo === "pausa_inicio" ? "Inicio pausa" :
+              "Fin pausa",
+        tipo_pausa: r.tipo_pausa || "",
+        metodo: r.metodo === "app" ? "App" : "Manual",
+        sede: "Central",
+        notas: r.notas || ""
+      })),
+      [
+        { key: "empleado", label: "Empleado" },
+        { key: "fecha", label: "Fecha" },
+        { key: "hora", label: "Hora" },
+        { key: "tipo", label: "Tipo" },
+        { key: "tipo_pausa", label: "Tipo Pausa" },
+        { key: "metodo", label: "Método" },
+        { key: "sede", label: "Sede" },
+        { key: "notas", label: "Notas" }
+      ],
+      "fichajes_inspeccion_laboral"
+    )
+
+    toast.success("Fichajes exportados para inspección laboral")
+  }
+
+  const handleVerDetalle = (empleadoId: string, empleadoNombre: string) => {
+    toast.info(`Ver detalle de ${empleadoNombre}`)
+    // En una implementación real, esto abriría un modal o navegaría a una página de detalle
+  }
+
+  // Check if user should see admin view
+  const showAdminTab = userRole === "admin" || userRole === "secretario"
 
   return (
     <div className="space-y-6">
@@ -220,247 +329,116 @@ export default function FichajesPage() {
           <div>
             <h1 className="text-3xl font-bold">Fichajes</h1>
             <p className="text-muted-foreground">
-              Control de entrada y salida del personal
+              Sistema de control horario - Real Decreto-ley 8/2019
             </p>
           </div>
         </div>
-        <ExportButton
-          onExport={() =>
-            exportToCSV(
-              fichajesFiltrados.map((f) => ({
-                usuario: `${f.usuario_nombre} ${f.usuario_apellidos}`,
-                tipo: f.tipo === "entrada" ? "Entrada" : "Salida",
-                fecha: exportFormatDate(f.timestamp),
-                hora: new Date(f.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-                metodo: f.metodo === "app" ? "App" : "Manual",
-              })),
-              [
-                { key: "usuario", label: "Usuario" },
-                { key: "tipo", label: "Tipo" },
-                { key: "fecha", label: "Fecha" },
-                { key: "hora", label: "Hora" },
-                { key: "metodo", label: "Método" },
-              ],
-              "fichajes"
-            )
-          }
-        />
+        <div className="flex items-center gap-2">
+          <RequireWrite entity="fichajes">
+            <IncidenciaFormDialog
+              empleados={MOCK_EMPLEADOS}
+              onIncidencia={handleIncidencia}
+            >
+              <Button variant="outline" size="sm">
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Nueva incidencia
+              </Button>
+            </IncidenciaFormDialog>
+          </RequireWrite>
+          <Button onClick={handleExportCSV} size="sm" className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
-      {/* Tarjeta de fichar */}
-      <Card className="border-2 border-primary/20 bg-primary/5">
-        <CardContent className="flex flex-col items-center gap-4 py-8 sm:flex-row sm:justify-between sm:py-6">
-          <div className="flex flex-col items-center gap-1 sm:items-start">
-            <p className="text-sm text-muted-foreground">Hora actual</p>
-            <p className="text-4xl font-bold tabular-nums tracking-tight">
-              {horaActual.toLocaleTimeString("es-ES", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {horaActual.toLocaleDateString("es-ES", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+      {/* Legal compliance notice */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="flex items-start gap-3 py-4">
+          <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm text-blue-800">
+              <strong>Cumplimiento legal:</strong> Este sistema registra la jornada laboral
+              según el Real Decreto-ley 8/2019. Los datos se conservan 4 años para
+              inspecciones de trabajo (art. 34.9 ET). Multas por incumplimiento:
+              751€-7.500€ (falta de sistema), hasta 225.018€ (fraude).
             </p>
           </div>
-          <RequireWrite entity="fichajes">
-            <Button
-              size="lg"
-              className={`h-16 min-w-48 text-lg font-semibold ${
-                siguienteTipo === "entrada"
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-red-600 hover:bg-red-700"
-              }`}
-              onClick={handleFichar}
-            >
-              {siguienteTipo === "entrada" ? (
-                <LogIn className="mr-2 size-6" />
-              ) : (
-                <LogOut className="mr-2 size-6" />
-              )}
-              Fichar {siguienteTipo}
-            </Button>
-          </RequireWrite>
         </CardContent>
       </Card>
 
-      {/* Resumen del día */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-              <Users className="size-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{stats.empleadosFichados}</p>
-              <p className="text-xs text-muted-foreground">
-                Han fichado {esHoy ? "hoy" : "ese día"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-green-100 text-green-600">
-              <LogIn className="size-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{stats.entradas}</p>
-              <p className="text-xs text-muted-foreground">Entradas</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-red-100 text-red-600">
-              <LogOut className="size-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{stats.salidas}</p>
-              <p className="text-xs text-muted-foreground">Salidas</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-3 py-4">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-              <UserX className="size-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{stats.sinFichar}</p>
-              <p className="text-xs text-muted-foreground">Sin fichar</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative" ref={calendarRef}>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setCalendarOpen(!calendarOpen)}
-          >
-            <CalendarDays className="size-4" />
-            {fechaFiltroLabel}
-          </Button>
-          {calendarOpen && (
-            <div className="absolute left-0 top-full z-50 mt-1 rounded-lg border bg-background p-0 shadow-lg">
-              <Calendar
-                mode="single"
-                selected={fechaFiltro}
-                onSelect={(date) => {
-                  if (date) setFechaFiltro(date)
-                  setCalendarOpen(false)
-                }}
-                locale={es}
-              />
-            </div>
+      {/* Tabs for Employee and Admin views */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "empleado" | "admin")}>
+        <TabsList className="grid w-full max-w-[400px]" style={{ gridTemplateColumns: showAdminTab ? "1fr 1fr" : "1fr" }}>
+          <TabsTrigger value="empleado" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Vista Empleado
+          </TabsTrigger>
+          {showAdminTab && (
+            <TabsTrigger value="admin" className="gap-2">
+              <Users className="h-4 w-4" />
+              Vista Admin
+            </TabsTrigger>
           )}
-        </div>
-        <Select value={empleadoFiltro} onValueChange={(v) => setEmpleadoFiltro(v ?? "todos")}>
-          <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="Todos los empleados" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los empleados</SelectItem>
-            {EMPLEADOS.map((e) => (
-              <SelectItem
-                key={`${e.nombre} ${e.apellidos}`}
-                value={`${e.nombre} ${e.apellidos}`}
-              >
-                {e.nombre} {e.apellidos}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setFechaFiltro(new Date())
-              setEmpleadoFiltro("todos")
-            }}
-          >
-            <X className="mr-1 size-4" />
-            Limpiar filtros
-          </Button>
-        )}
-      </div>
+        </TabsList>
 
-      {/* Tabla de fichajes */}
-      <div className="rounded-lg border overflow-x-auto">
-        <Table className="min-w-[600px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empleado</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead className="hidden sm:table-cell">
-                Fecha/Hora
-              </TableHead>
-              <TableHead className="sm:hidden">Hora</TableHead>
-              <TableHead className="hidden sm:table-cell">Método</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fichajesFiltrados.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="py-12 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <Clock className="size-8 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">
-                      No hay fichajes para esta fecha
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              fichajesFiltrados.map((f) => (
-                <TableRow key={f.id}>
-                  <TableCell className="font-medium">
-                    {f.usuario_nombre} {f.usuario_apellidos}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        f.tipo === "entrada"
-                          ? "bg-green-100 text-green-700 border-green-200"
-                          : "bg-red-100 text-red-700 border-red-200"
-                      }
-                    >
-                      {f.tipo === "entrada" ? "Entrada" : "Salida"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden text-muted-foreground sm:table-cell">
-                    {formatDateTime(f.timestamp)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground sm:hidden">
-                    {formatTime(f.timestamp)}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge
-                      className={
-                        f.metodo === "app"
-                          ? "bg-blue-100 text-blue-700 border-blue-200"
-                          : "bg-gray-100 text-gray-700 border-gray-200"
-                      }
-                    >
-                      {f.metodo === "app" ? "App" : "Manual"}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+        {/* Employee View */}
+        <TabsContent value="empleado" className="space-y-6">
+          {/* Main Clock and Actions */}
+          <RelojFichar
+            estadoActual={estadoEmpleadoActual.estado}
+            horaEntrada={estadoEmpleadoActual.horaEntrada}
+            horaPausa={estadoEmpleadoActual.horaPausa}
+            tipoPausa={estadoEmpleadoActual.tipoPausa}
+            onFichar={handleFichar}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Today's Timeline */}
+            <TimelineDia
+              registros={mockData.registros}
+              fecha={fechaHoy}
+              empleadoNombre="Miguel Santos Rivas"
+            />
+
+            {/* Week Summary */}
+            <ResumenSemana
+              registros={mockData.registros}
+              fechaActual={new Date()}
+              empleadoId={currentUserId}
+            />
+          </div>
+        </TabsContent>
+
+        {/* Admin View */}
+        {showAdminTab && (
+          <TabsContent value="admin" className="space-y-6">
+            <AdminFichajesTable
+              empleados={MOCK_EMPLEADOS}
+              registros={mockData.registros}
+              incidencias={mockData.incidencias}
+              fecha={fechaHoy}
+              onExportCSV={handleExportCSV}
+              onVerDetalle={handleVerDetalle}
+            />
+          </TabsContent>
+        )}
+      </Tabs>
+
+      {/* Debug info for development */}
+      {process.env.NODE_ENV === "development" && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-sm text-yellow-800">Debug Info (solo desarrollo)</CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs text-yellow-700">
+            <p>Usuario actual: Miguel Santos Rivas (ID: {currentUserId})</p>
+            <p>Estado: {estadoEmpleadoActual.estado}</p>
+            <p>Registros hoy: {mockData.registros.filter(r => r.usuario_id === currentUserId && r.timestamp.startsWith(fechaHoy)).length}</p>
+            <p>Incidencias hoy: {mockData.incidencias.filter(i => i.usuario_id === currentUserId && i.fecha === fechaHoy).length}</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

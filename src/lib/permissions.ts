@@ -16,6 +16,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/examenes", label: "Exámenes", icon: "ClipboardCheck", group: "Gestión" },
   { href: "/dashboard/facturacion", label: "Facturación", icon: "Receipt", group: "Finanzas" },
   { href: "/dashboard/contratos", label: "Contratos", icon: "FileSignature", group: "Finanzas" },
+  { href: "/dashboard/fichajes", label: "Fichajes", icon: "Clock", group: "Administración" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox", group: "Comunicación" },
   { href: "/dashboard/automatizaciones", label: "Automatizaciones", icon: "Zap", group: "Comunicación" },
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3", group: "Análisis" },
