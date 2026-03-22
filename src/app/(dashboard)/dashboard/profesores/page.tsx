@@ -23,6 +23,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { ProfesorFormDialog } from "@/components/profesores/profesor-form-dialog"
+import { ProfesorDetailSheet } from "@/components/profesores/profesor-detail-sheet"
 import type { Profesor } from "@/components/profesores/types"
 import { TIPO_CLASE_LABELS, DIA_LABELS } from "@/components/profesores/types"
 import { useSupabaseQuery } from "@/hooks/use-supabase-query"
@@ -41,6 +42,8 @@ export default function ProfesoresPage() {
   const [editingProfesor, setEditingProfesor] = React.useState<Profesor | null>(null)
   const [toggleProfesor, setToggleProfesor] = React.useState<Profesor | null>(null)
   const [toggleDialogOpen, setToggleDialogOpen] = React.useState(false)
+  const [selectedProfesor, setSelectedProfesor] = React.useState<Profesor | null>(null)
+  const [detailSheetOpen, setDetailSheetOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (supabaseProfesores) setProfesores(supabaseProfesores)
@@ -112,6 +115,23 @@ export default function ProfesoresPage() {
     }
     setToggleProfesor(null)
     setToggleDialogOpen(false)
+  }
+
+  function handleProfesorClick(profesor: Profesor) {
+    setSelectedProfesor(profesor)
+    setDetailSheetOpen(true)
+  }
+
+  function handleEditFromSheet(profesor: Profesor) {
+    setEditingProfesor(profesor)
+    setFormOpen(true)
+    setDetailSheetOpen(false)
+  }
+
+  function handleToggleFromSheet(profesor: Profesor) {
+    setToggleProfesor(profesor)
+    setToggleDialogOpen(true)
+    setDetailSheetOpen(false)
   }
 
   if (loading) return <LoadingSkeleton />
@@ -190,7 +210,11 @@ export default function ProfesoresPage() {
             </TableHeader>
             <TableBody>
               {filtered.map((profesor) => (
-                <TableRow key={profesor.id}>
+                <TableRow
+                  key={profesor.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleProfesorClick(profesor)}
+                >
                   <TableCell className="font-medium">
                     {profesor.nombre} {profesor.apellidos}
                   </TableCell>
@@ -231,14 +255,20 @@ export default function ProfesoresPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEdit(profesor)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEdit(profesor)
+                          }}
                         >
                           Editar
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleToggleClick(profesor)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleClick(profesor)
+                          }}
                           className={
                             profesor.activo
                               ? "text-destructive hover:text-destructive"
@@ -322,6 +352,15 @@ export default function ProfesoresPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Professor Detail Sheet */}
+      <ProfesorDetailSheet
+        open={detailSheetOpen}
+        onOpenChange={setDetailSheetOpen}
+        profesor={selectedProfesor}
+        onEdit={handleEditFromSheet}
+        onToggleActive={handleToggleFromSheet}
+      />
     </div>
   )
 }
