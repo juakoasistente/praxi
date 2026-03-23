@@ -31,7 +31,22 @@ import { createAlumnoAccount } from "@/lib/services/alumnos"
 
 type AlumnoFormData = Omit<Alumno, "id">
 
-const EMPTY_FORM: AlumnoFormData = {
+// Extended form state with additional fields for internal use
+interface ExtendedFormData extends AlumnoFormData {
+  sexo: string
+  segundo_apellido: string
+  nacionalidad: string
+  como_nos_conocio: string
+  codigo_postal: string
+  poblacion: string
+  provincia: string
+  pais: string
+  tutor_nombre: string
+  tutor_dni: string
+  tutor_relacion: string
+}
+
+const EMPTY_FORM: ExtendedFormData = {
   nombre: "",
   apellidos: "",
   dni: "",
@@ -44,6 +59,19 @@ const EMPTY_FORM: AlumnoFormData = {
   fecha_matricula: new Date().toISOString().split("T")[0],
   notas: null,
   sede_id: "1", // Default to Central sede
+  // New fields
+  sexo: "",
+  segundo_apellido: "",
+  nacionalidad: "Española",
+  como_nos_conocio: "",
+  codigo_postal: "",
+  poblacion: "",
+  provincia: "",
+  pais: "España",
+  // Tutor fields
+  tutor_nombre: "",
+  tutor_dni: "",
+  tutor_relacion: "",
 }
 
 interface AlumnoFormDialogProps {
@@ -53,13 +81,23 @@ interface AlumnoFormDialogProps {
   onSave: (data: AlumnoFormData) => void
 }
 
+// Helper function to check if someone is a minor
+function isMinor(fecha: string): boolean {
+  if (!fecha) return false
+  const birth = new Date(fecha)
+  const now = new Date()
+  let age = now.getFullYear() - birth.getFullYear()
+  if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--
+  return age < 18
+}
+
 export function AlumnoFormDialog({
   open,
   onOpenChange,
   alumno,
   onSave,
 }: AlumnoFormDialogProps) {
-  const [form, setForm] = React.useState<AlumnoFormData>(EMPTY_FORM)
+  const [form, setForm] = React.useState<ExtendedFormData>(EMPTY_FORM)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [createAccount, setCreateAccount] = React.useState(false)
   const [accountPassword, setAccountPassword] = React.useState("")
@@ -70,7 +108,8 @@ export function AlumnoFormDialog({
   React.useEffect(() => {
     if (alumno) {
       const { id: _, ...rest } = alumno
-      setForm(rest)
+      // Merge with EMPTY_FORM to ensure all fields have default values
+      setForm({ ...EMPTY_FORM, ...rest })
     } else {
       setForm(EMPTY_FORM)
     }
@@ -139,8 +178,10 @@ export function AlumnoFormDialog({
     setErrors({})
 
     try {
+      // Extract only the original Alumno fields for saving
+      const { sexo, segundo_apellido, nacionalidad, como_nos_conocio, codigo_postal, poblacion, provincia, pais, tutor_nombre, tutor_dni, tutor_relacion, ...alumnoData } = form
       // Save alumno data first
-      onSave(form)
+      onSave(alumnoData)
 
       // Create account if requested
       if (createAccount && form.email && accountPassword) {
@@ -172,7 +213,7 @@ export function AlumnoFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Editar alumno" : "Nuevo alumno"}
@@ -279,6 +320,81 @@ export function AlumnoFormDialog({
               {errors.fecha_matricula && <p className="text-xs text-destructive mt-1">{errors.fecha_matricula}</p>}
             </div>
           </div>
+          <Separator />
+          <h4 className="text-sm font-semibold">Datos personales</h4>
+
+          {/* Sexo */}
+          <div className="space-y-1.5">
+            <Label>Sexo</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={form.sexo === "H" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setForm({ ...form, sexo: "H" })}
+              >
+                H
+              </Button>
+              <Button
+                type="button"
+                variant={form.sexo === "M" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setForm({ ...form, sexo: "M" })}
+              >
+                M
+              </Button>
+            </div>
+          </div>
+
+          {/* Segundo apellido y Nacionalidad */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="segundo_apellido">Segundo apellido</Label>
+              <Input
+                id="segundo_apellido"
+                value={form.segundo_apellido}
+                onChange={(e) =>
+                  setForm({ ...form, segundo_apellido: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nacionalidad">Nacionalidad</Label>
+              <Input
+                id="nacionalidad"
+                value={form.nacionalidad}
+                onChange={(e) =>
+                  setForm({ ...form, nacionalidad: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          {/* Cómo nos conoció */}
+          <div className="space-y-1.5">
+            <Label>¿Cómo nos conoció?</Label>
+            <Select
+              value={form.como_nos_conocio}
+              onValueChange={(val) =>
+                setForm({ ...form, como_nos_conocio: val || "" })
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona una opción" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Internet">Internet</SelectItem>
+                <SelectItem value="Recomendación">Recomendación</SelectItem>
+                <SelectItem value="Pasaba por aquí">Pasaba por aquí</SelectItem>
+                <SelectItem value="Redes sociales">Redes sociales</SelectItem>
+                <SelectItem value="Otro">Otro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+          <h4 className="text-sm font-semibold">Domicilio</h4>
+
           <div className="space-y-1.5">
             <Label htmlFor="direccion">Dirección</Label>
             <Input
@@ -289,6 +405,57 @@ export function AlumnoFormDialog({
               }
             />
           </div>
+
+          {/* Código postal y Población */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="codigo_postal">Código postal</Label>
+              <Input
+                id="codigo_postal"
+                value={form.codigo_postal}
+                onChange={(e) =>
+                  setForm({ ...form, codigo_postal: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="poblacion">Población</Label>
+              <Input
+                id="poblacion"
+                value={form.poblacion}
+                onChange={(e) =>
+                  setForm({ ...form, poblacion: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          {/* Provincia y País */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="provincia">Provincia</Label>
+              <Input
+                id="provincia"
+                value={form.provincia}
+                onChange={(e) =>
+                  setForm({ ...form, provincia: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="pais">País</Label>
+              <Input
+                id="pais"
+                value={form.pais}
+                onChange={(e) =>
+                  setForm({ ...form, pais: e.target.value })
+                }
+              />
+            </div>
+          </div>
+
+          <Separator />
+          <h4 className="text-sm font-semibold">Matrícula</h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Permiso *</Label>
@@ -344,6 +511,59 @@ export function AlumnoFormDialog({
               }
             />
           </div>
+
+          {/* Tutor section - Only for minors */}
+          {isMinor(form.fecha_nacimiento) && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Datos del tutor (menor de edad)</h4>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="tutor_nombre">Nombre completo del tutor</Label>
+                  <Input
+                    id="tutor_nombre"
+                    value={form.tutor_nombre}
+                    onChange={(e) =>
+                      setForm({ ...form, tutor_nombre: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="tutor_dni">DNI del tutor</Label>
+                    <Input
+                      id="tutor_dni"
+                      placeholder="12345678A"
+                      value={form.tutor_dni}
+                      onChange={(e) =>
+                        setForm({ ...form, tutor_dni: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Relación</Label>
+                    <Select
+                      value={form.tutor_relacion}
+                      onValueChange={(val) =>
+                        setForm({ ...form, tutor_relacion: val || "" })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecciona relación" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Padre">Padre</SelectItem>
+                        <SelectItem value="Madre">Madre</SelectItem>
+                        <SelectItem value="Tutor legal">Tutor legal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Account Creation Section - Only for new alumnos */}
           {!isEditing && (
