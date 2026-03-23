@@ -169,15 +169,12 @@ export function AlumnoFormDialog({
     setShowBanking(false)
   }, [alumno, open, sedes, sedesLoading])
 
-  React.useEffect(() => {
-    // Compute backward compatibility fields
-    const apellidos = form.apellido1 + (form.apellido2 ? ` ${form.apellido2}` : "")
-    setForm(prev => ({
-      ...prev,
-      apellidos,
-      telefono: prev.telefono_movil
-    }))
-  }, [form.apellido1, form.apellido2, form.telefono_movil])
+  // Compute backward compatibility fields on save, not in useEffect (avoids infinite loop)
+  const computeBackwardCompat = (data: AlumnoFormData) => ({
+    ...data,
+    apellidos: data.apellido1 + (data.apellido2 ? ` ${data.apellido2}` : ""),
+    telefono: data.telefono_movil,
+  })
 
   function clearError(field: string) {
     if (errors[field]) {
@@ -279,7 +276,7 @@ export function AlumnoFormDialog({
         toast.success("Alumno creado rápidamente")
       }
 
-      onSave(formWithDefaults)
+      onSave(computeBackwardCompat(formWithDefaults))
       onOpenChange(false)
     } catch (error: any) {
       toast.error("Error al crear alumno", {
@@ -306,7 +303,7 @@ export function AlumnoFormDialog({
         toast.success(isEditing ? "Alumno actualizado correctamente" : "Alumno matriculado correctamente")
       }
 
-      onSave(form)
+      onSave(computeBackwardCompat(form))
       onOpenChange(false)
     } catch (error: any) {
       toast.error(isEditing ? "Error al actualizar alumno" : "Error al matricular alumno", {
