@@ -145,29 +145,29 @@ export function AlumnoFormDialog({
   const isEditing = !!alumno
   const showTutor = isMinor(form.fecha_nacimiento)
 
+  // Reset form only when dialog opens/closes
+  const prevOpen = React.useRef(open)
   React.useEffect(() => {
-    if (alumno) {
-      const { id: _, ...rest } = alumno
-      setForm(rest)
-      setQuickMode(false) // Always show full form when editing
-    } else {
-      const newForm = { ...EMPTY_FORM }
-      // Set default sede if available
-      if (sedes.length > 0 && !sedesLoading) {
-        const defaultSede = sedes.find(s => s.es_principal) || sedes[0]
-        newForm.sede_id = defaultSede.id
+    if (open && !prevOpen.current) {
+      // Dialog just opened
+      if (alumno) {
+        const { id: _, ...rest } = alumno
+        setForm(rest)
+        setQuickMode(false)
+      } else {
+        setForm({ ...EMPTY_FORM })
+        setQuickMode(true)
       }
-      setForm(newForm)
-      setQuickMode(true)
+      setCurrentStep(1)
+      setErrors({})
+      setCreateAccount(false)
+      setAccountPassword("")
+      setShowAccountPassword(false)
+      setShowBilling(false)
+      setShowBanking(false)
     }
-    setCurrentStep(1)
-    setErrors({})
-    setCreateAccount(false)
-    setAccountPassword("")
-    setShowAccountPassword(false)
-    setShowBilling(false)
-    setShowBanking(false)
-  }, [alumno, open, sedes, sedesLoading])
+    prevOpen.current = open
+  }, [open, alumno])
 
   // Compute backward compatibility fields on save, not in useEffect (avoids infinite loop)
   const computeBackwardCompat = (data: AlumnoFormData) => ({
