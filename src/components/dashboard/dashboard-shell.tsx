@@ -15,7 +15,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { InstallPrompt } from '@/components/pwa/install-prompt'
 import { OfflineIndicator } from '@/components/pwa/offline-indicator'
-import { LayoutDashboard, Users, GraduationCap, Calendar, Car, Receipt, Clock, ClipboardCheck, BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2, ChevronDown, ChevronRight, ChevronLeft, MessageCircle, Star } from 'lucide-react'
+import { LayoutDashboard, Users, GraduationCap, Calendar, Car, Receipt, Clock, ClipboardCheck, BarChart3, Settings, Inbox, FileSignature, FileBarChart, Zap, Building2, ChevronDown, ChevronRight, ChevronLeft, MessageCircle, Star, Megaphone, CreditCard } from 'lucide-react'
 import { SedeSelector } from '@/components/sedes/sede-selector'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -40,6 +40,8 @@ const LUCIDE_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   FileBarChart,
   Zap,
   Building2,
+  Megaphone,
+  CreditCard,
 }
 
 interface UserProfile {
