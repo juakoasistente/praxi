@@ -403,7 +403,7 @@ export function DashboardShell({
                   onClick={() => setFeedbackDialogOpen(true)}
                 >
                   <MessageCircle className="size-4" />
-                  💬 Danos tu opinión
+                  Danos tu opinión
                 </Button>
               </div>
               {/* Version */}
@@ -467,7 +467,7 @@ export function DashboardShell({
       <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>💬 Tu opinión nos importa</DialogTitle>
+            <DialogTitle>Tu opinión nos importa</DialogTitle>
             <DialogDescription>
               Cuéntanos qué piensas sobre Praxi. Tu feedback nos ayuda a mejorar.
             </DialogDescription>
