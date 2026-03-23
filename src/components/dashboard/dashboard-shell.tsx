@@ -323,13 +323,7 @@ export function DashboardShell({
                 <span className="text-lg font-bold tracking-tight">Praxi</span>
               </div>
             )}
-            {sidebarCollapsed && (
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600">
-                <span className="text-white font-black text-xs leading-none">
-                  <span className="text-sm font-black">P</span><span className="text-xs font-bold">x</span>
-                </span>
-              </div>
-            )}
+            {/* Logo hidden when sidebar collapsed */}
           </div>
           {!sidebarCollapsed && <NotificationBell />}
         </div>
