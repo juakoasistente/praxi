@@ -10,7 +10,7 @@ export interface NavItem {
 const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard", group: "Principal" },
   { href: "/dashboard/alumnos", label: "Alumnos", icon: "Users", group: "Gestión" },
-  { href: "/dashboard/profesores", label: "Profesores", icon: "GraduationCap", group: "Gestión" },
+  { href: "/dashboard/profesores", label: "Personal", icon: "GraduationCap", group: "Gestión" },
   { href: "/dashboard/clases", label: "Clases", icon: "Calendar", group: "Gestión" },
   { href: "/dashboard/vehiculos", label: "Vehículos", icon: "Car", group: "Gestión" },
   { href: "/dashboard/examenes", label: "Exámenes", icon: "ClipboardCheck", group: "Gestión" },
