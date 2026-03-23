@@ -577,14 +577,14 @@ export function AlumnoFormDialog({
                     onCheckedChange={(checked) => setCreateAccount(!!checked)}
                   />
                   <Label htmlFor="createAccount" className="text-sm font-medium">
-                    Crear cuenta de acceso al portal
+                    Crear cuenta de acceso a la app
                   </Label>
                 </div>
 
                 {createAccount && (
                   <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
                     <p className="text-xs text-muted-foreground">
-                      Se creará una cuenta para que el alumno pueda acceder al portal.
+                      Se creará una cuenta para que el alumno pueda acceder a la app.
                     </p>
 
                     <div className="grid grid-cols-2 gap-3">
