@@ -20,6 +20,9 @@ export function SedeSelector() {
     ? 'Todas las sedes'
     : currentSede?.nombre || 'Seleccionar sede'
 
+  // Hide selector when no sedes exist
+  if (!loading && sedes.length === 0) return null
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="w-full flex items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors cursor-pointer outline-none">
