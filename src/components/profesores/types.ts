@@ -13,14 +13,31 @@ export interface FranjaHoraria {
 export interface Profesor {
   id: string
   nombre: string
-  apellidos: string
+  primer_apellido: string
+  segundo_apellido: string
+  sexo: "hombre" | "mujer"
+  dni: string
+  direccion: string
+  codigo_postal: string
+  poblacion: string
+  municipio: string
+  provincia: string
+  telefono_fijo: string
+  telefono_movil: string
   email: string
-  telefono: string
+  vehiculo_asignado?: string
+  fecha_permiso_a?: string
+  permitir_solapamiento: boolean
+  observaciones: string
   permisos_habilitados: string[]
   activo: boolean
   sedes: string[] // array of sede_ids (N:M relationship)
   tipo_clase: TipoClaseProfesor
   horario: FranjaHoraria[]
+
+  // Legacy field for backwards compatibility
+  apellidos?: string
+  telefono?: string
 }
 
 // Helper constants and labels
