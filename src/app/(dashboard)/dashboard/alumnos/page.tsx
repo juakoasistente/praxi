@@ -156,27 +156,18 @@ export default function AlumnosPage() {
         </div>
         <div className="flex gap-2">
           <ExportButton
-            onExport={() => {
-              // Prepare data with computed fields for export
-              const dataForExport = filtered.map(alumno => ({
-                ...alumno,
-                apellidos_display: alumno.apellido1 && alumno.apellido2
-                  ? `${alumno.apellido1} ${alumno.apellido2}`
-                  : (alumno.apellido1 || alumno.apellidos || ''),
-                telefono_display: alumno.telefono_movil || alumno.telefono || ''
-              }))
-
-              return exportToCSV(dataForExport, [
+            onExport={() =>
+              exportToCSV(filtered, [
                 { key: "nombre", label: "Nombre" },
-                { key: "apellidos_display", label: "Apellidos" },
+                { key: "apellidos", label: "Apellidos" },
                 { key: "dni", label: "DNI" },
-                { key: "telefono_display", label: "Teléfono" },
+                { key: "telefono", label: "Teléfono" },
                 { key: "email", label: "Email", format: (v) => (v as string) ?? "" },
                 { key: "permiso", label: "Permiso" },
                 { key: "estado", label: "Estado", format: (v) => ESTADO_LABELS[v as EstadoAlumno] ?? String(v) },
                 { key: "fecha_matricula", label: "Fecha matrícula", format: (v) => exportFormatDate(v as string) },
               ], "alumnos")
-            }}
+            }
           />
           <RequireWrite entity="alumnos">
             <Button
@@ -264,15 +255,13 @@ export default function AlumnosPage() {
                   }}
                 >
                   <TableCell className="font-medium">
-                    {alumno.nombre} {alumno.apellido1 && alumno.apellido2
-                      ? `${alumno.apellido1} ${alumno.apellido2}`
-                      : (alumno.apellido1 || alumno.apellidos)}
+                    {alumno.nombre} {alumno.apellidos}
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {alumno.dni}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    {alumno.telefono_movil || alumno.telefono}
+                    {alumno.telefono}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{alumno.permiso}</Badge>
