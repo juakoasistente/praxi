@@ -10,18 +10,52 @@ export type EstadoAlumno =
 
 export interface Alumno {
   id: string
+  codigo: string | null // auto-generated code
+  sede_id: string
+  // Personal
   nombre: string
-  apellidos: string
+  apellido1: string // primer apellido
+  apellido2: string | null // segundo apellido
   dni: string
-  email: string | null
-  telefono: string
+  sexo: "hombre" | "mujer" | null
   fecha_nacimiento: string
+  pais_nacimiento: string | null
+  nacionalidad: string | null
+  estudios: string | null
+  telefono_fijo: string | null
+  telefono_movil: string
+  email: string | null
+  foto_url: string | null
+  como_conocio: string | null // internet, recomendación, etc.
+  observaciones: string | null
+  // Tutor (if minor)
+  tutor_nombre: string | null
+  tutor_apellidos: string | null
+  tutor_dni: string | null
+  tutor_relacion: string | null // padre/madre/tutor
+  // Address
   direccion: string | null
+  codigo_postal: string | null
+  poblacion: string | null
+  provincia: string | null
+  pais: string | null
+  // Billing (optional)
+  facturacion_diferente: boolean
+  facturacion_nif: string | null
+  facturacion_nombre: string | null
+  facturacion_direccion: string | null
+  // Banking (optional)
+  titular_cuenta: string | null
+  iban: string | null
+  fecha_mandato_sepa: string | null
+  // Enrollment
   permiso: PermisoType
   estado: EstadoAlumno
   fecha_matricula: string
   notas: string | null
-  sede_id: string
+  // Keep backward compat
+  apellidos: string // computed from apellido1 + apellido2
+  telefono: string // mapped to telefono_movil
 }
 
 export const ESTADO_LABELS: Record<EstadoAlumno, string> = {
@@ -50,4 +84,27 @@ export const ESTADOS: EstadoAlumno[] = [
   "practico_aprobado",
   "completado",
   "baja",
+]
+
+export const ESTUDIOS_OPTIONS = [
+  { value: "sin_estudios", label: "Sin estudios" },
+  { value: "primarios", label: "Primarios" },
+  { value: "secundarios", label: "Secundarios" },
+  { value: "bachillerato", label: "Bachillerato" },
+  { value: "fp", label: "Formación Profesional" },
+  { value: "universitarios", label: "Universitarios" },
+]
+
+export const COMO_CONOCIO_OPTIONS = [
+  { value: "internet", label: "Internet" },
+  { value: "recomendacion", label: "Recomendación" },
+  { value: "publicidad", label: "Publicidad" },
+  { value: "redes_sociales", label: "Redes sociales" },
+  { value: "otros", label: "Otros" },
+]
+
+export const RELACION_TUTOR_OPTIONS = [
+  { value: "padre", label: "Padre" },
+  { value: "madre", label: "Madre" },
+  { value: "tutor_legal", label: "Tutor legal" },
 ]
