@@ -315,28 +315,19 @@ export function DashboardShell({
             </Button>
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:"#4f46e5"}} />
-                        <stop offset="100%" style={{stopColor:"#3b38f7"}} />
-                      </linearGradient>
-                      <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:"#6366f1"}} />
-                        <stop offset="100%" style={{stopColor:"#4f46e5"}} />
-                      </linearGradient>
-                    </defs>
-                    <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#brand-gradient)" />
-                    <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
-                    <circle cx="15" cy="75" r="3" fill="url(#accent-gradient)" opacity="0.8" />
-                    <circle cx="35" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.6" />
-                    <circle cx="55" cy="75" r="2.5" fill="url(#accent-gradient)" opacity="0.7" />
-                    <circle cx="75" cy="68" r="2" fill="url(#accent-gradient)" opacity="0.5" />
-                    <path d="M15 75 Q35 65 55 75 Q75 65 85 68" stroke="url(#accent-gradient)" strokeWidth="1.5" fill="none" opacity="0.3" />
-                  </svg>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600">
+                  <span className="text-white font-black text-sm leading-none">
+                    <span className="text-base font-black">P</span><span className="text-xs font-bold">x</span>
+                  </span>
                 </div>
                 <span className="text-lg font-bold tracking-tight">Praxi</span>
+              </div>
+            )}
+            {sidebarCollapsed && (
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600">
+                <span className="text-white font-black text-xs leading-none">
+                  <span className="text-sm font-black">P</span><span className="text-xs font-bold">x</span>
+                </span>
               </div>
             )}
           </div>
@@ -412,7 +403,7 @@ export function DashboardShell({
                   onClick={() => setFeedbackDialogOpen(true)}
                 >
                   <MessageCircle className="size-4" />
-                  Feedback
+                  💬 Danos tu opinión
                 </Button>
               </div>
               {/* Version */}
@@ -440,26 +431,10 @@ export function DashboardShell({
             </SheetTrigger>
             <SheetContent side="left" className="w-64 bg-sidebar text-sidebar-foreground p-0">
               <div className="flex h-16 items-center gap-2.5 px-6">
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="brand-gradient-mobile" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:"#4f46e5"}} />
-                        <stop offset="100%" style={{stopColor:"#3b38f7"}} />
-                      </linearGradient>
-                      <linearGradient id="accent-gradient-mobile" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:"#6366f1"}} />
-                        <stop offset="100%" style={{stopColor:"#4f46e5"}} />
-                      </linearGradient>
-                    </defs>
-                    <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#brand-gradient-mobile)" />
-                    <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
-                    <circle cx="15" cy="75" r="3" fill="url(#accent-gradient-mobile)" opacity="0.8" />
-                    <circle cx="35" cy="68" r="2" fill="url(#accent-gradient-mobile)" opacity="0.6" />
-                    <circle cx="55" cy="75" r="2.5" fill="url(#accent-gradient-mobile)" opacity="0.7" />
-                    <circle cx="75" cy="68" r="2" fill="url(#accent-gradient-mobile)" opacity="0.5" />
-                    <path d="M15 75 Q35 65 55 75 Q75 65 85 68" stroke="url(#accent-gradient-mobile)" strokeWidth="1.5" fill="none" opacity="0.3" />
-                  </svg>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600">
+                  <span className="text-white font-black text-sm leading-none">
+                    <span className="text-base font-black">P</span><span className="text-xs font-bold">x</span>
+                  </span>
                 </div>
                 <span className="text-lg font-bold tracking-tight">Praxi</span>
               </div>

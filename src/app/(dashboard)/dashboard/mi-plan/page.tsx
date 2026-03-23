@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CreditCard, Check, X, Calendar, Euro } from "lucide-react"
+import { CreditCard, Check, X, Calendar, Euro, Shield, Users, Car, FileText, Globe, Settings, BarChart3, Headphones, Building2, Zap, Code, Phone, Palette } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,23 +12,24 @@ interface PlanFeature {
   name: string
   included: boolean
   description?: string
+  icon: React.ComponentType<{ className?: string }>
 }
 
 const PLAN_FEATURES: PlanFeature[] = [
-  { name: "Gestión de alumnos", included: true, description: "Sin límite de alumnos" },
-  { name: "Gestión de profesores", included: true, description: "Hasta 10 profesores" },
-  { name: "Planificación de clases", included: true, description: "Calendario completo" },
-  { name: "Gestión de vehículos", included: true, description: "Hasta 5 vehículos" },
-  { name: "Facturación automática", included: true, description: "PDF y envío automático" },
-  { name: "Portal del alumno", included: true, description: "App móvil incluida" },
-  { name: "Fichajes legales", included: true, description: "Cumplimiento normativo" },
-  { name: "Estadísticas básicas", included: true, description: "Reportes esenciales" },
-  { name: "Soporte técnico", included: true, description: "Email y chat" },
-  { name: "Multi-sede", included: true, description: "Hasta 3 sedes" },
-  { name: "API completa", included: false, description: "Solo en plan Enterprise" },
-  { name: "Integraciones avanzadas", included: false, description: "Solo en plan Enterprise" },
-  { name: "Soporte telefónico", included: false, description: "Solo en plan Enterprise" },
-  { name: "Personalización marca", included: false, description: "Solo en plan Enterprise" },
+  { name: "Gestión de alumnos", included: true, description: "Sin límite de alumnos", icon: Users },
+  { name: "Gestión de profesores", included: true, description: "Hasta 10 profesores", icon: Users },
+  { name: "Planificación de clases", included: true, description: "Calendario completo", icon: Calendar },
+  { name: "Gestión de vehículos", included: true, description: "Hasta 5 vehículos", icon: Car },
+  { name: "Facturación automática", included: true, description: "PDF y envío automático", icon: FileText },
+  { name: "Portal del alumno", included: true, description: "App móvil incluida", icon: Globe },
+  { name: "Fichajes legales", included: true, description: "Cumplimiento normativo", icon: Shield },
+  { name: "Estadísticas básicas", included: true, description: "Reportes esenciales", icon: BarChart3 },
+  { name: "Soporte técnico", included: true, description: "Email y chat", icon: Headphones },
+  { name: "Multi-sede", included: true, description: "Hasta 3 sedes", icon: Building2 },
+  { name: "API completa", included: false, description: "Solo en plan Enterprise", icon: Code },
+  { name: "Integraciones avanzadas", included: false, description: "Solo en plan Enterprise", icon: Zap },
+  { name: "Soporte telefónico", included: false, description: "Solo en plan Enterprise", icon: Phone },
+  { name: "Personalización marca", included: false, description: "Solo en plan Enterprise", icon: Palette },
 ]
 
 export default function MiPlanPage() {
@@ -43,15 +44,20 @@ export default function MiPlanPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
-          <CreditCard className="size-5 text-primary" />
+    <div className="space-y-8">
+      {/* Decorative Header */}
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="size-20 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 flex items-center justify-center shadow-lg">
+              <Shield className="size-10 text-white" />
+            </div>
+            <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-blue-400/20 to-indigo-600/20 blur-md -z-10"></div>
+          </div>
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Mi plan</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Mi Plan</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Información sobre tu suscripción actual
           </p>
         </div>
@@ -126,35 +132,45 @@ export default function MiPlanPage() {
 
         {/* Features */}
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="border-t-4 border-t-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
+            <div className="h-1 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 rounded-t-lg" />
             <CardHeader>
-              <CardTitle className="text-lg">Funcionalidades incluidas</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings className="size-5 text-blue-600" />
+                Funcionalidades incluidas
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-3 sm:grid-cols-2">
-                {PLAN_FEATURES.map((feature) => (
-                  <div key={feature.name} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {feature.included ? (
-                        <div className="flex items-center justify-center size-5 rounded-full bg-green-100 dark:bg-green-900/30">
-                          <Check className="size-3 text-green-600 dark:text-green-400" />
+                {PLAN_FEATURES.map((feature) => {
+                  const Icon = feature.icon
+                  return (
+                    <div key={feature.name} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`size-4 ${feature.included ? 'text-blue-600' : 'text-muted-foreground'}`} />
+                        <div className="flex-shrink-0">
+                          {feature.included ? (
+                            <div className="flex items-center justify-center size-5 rounded-full bg-green-100 dark:bg-green-900/30">
+                              <Check className="size-3 text-green-600 dark:text-green-400" />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center size-5 rounded-full bg-red-100 dark:bg-red-900/30">
+                              <X className="size-3 text-red-600 dark:text-red-400" />
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="flex items-center justify-center size-5 rounded-full bg-red-100 dark:bg-red-900/30">
-                          <X className="size-3 text-red-600 dark:text-red-400" />
-                        </div>
-                      )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-medium">{feature.name}</h4>
+                        {feature.description && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {feature.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-medium">{feature.name}</h4>
-                      {feature.description && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {feature.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="mt-6 p-4 rounded-lg bg-muted/50">

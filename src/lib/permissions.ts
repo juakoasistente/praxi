@@ -17,6 +17,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/facturacion", label: "Facturación", icon: "Receipt", group: "Finanzas" },
   { href: "/dashboard/contratos", label: "Contratos", icon: "FileSignature", group: "Finanzas" },
   { href: "/dashboard/fichajes", label: "Fichajes", icon: "Clock", group: "Administración" },
+  { href: "/dashboard/sedes", label: "Sedes", icon: "Building2", group: "Administración" },
   { href: "/dashboard/inbox", label: "Inbox", icon: "Inbox", group: "Comunicación" },
   { href: "/dashboard/automatizaciones", label: "Automatizaciones", icon: "Zap", group: "Comunicación" },
   { href: "/dashboard/estadisticas", label: "Estadísticas", icon: "BarChart3", group: "Análisis" },
@@ -37,6 +38,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/dashboard/facturacion",
     "/dashboard/examenes",
     "/dashboard/fichajes",
+    "/dashboard/sedes",
     "/dashboard/inbox",
     "/dashboard/contratos",
     "/dashboard/estadisticas",
@@ -70,7 +72,7 @@ const ROLE_ROUTES: Record<UserRole, string[]> = {
 }
 
 const ROLE_WRITE: Record<UserRole, string[]> = {
-  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes", "configuracion", "inbox", "contratos", "automatizaciones", "dgt"],
+  admin: ["alumnos", "profesores", "clases", "vehiculos", "facturacion", "examenes", "fichajes", "sedes", "configuracion", "inbox", "contratos", "automatizaciones", "dgt"],
   profesor: ["clases", "fichajes"],
   secretario: ["alumnos", "clases", "examenes", "facturacion", "fichajes", "inbox", "contratos", "dgt"],
 }

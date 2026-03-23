@@ -10,11 +10,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function SedeSelector() {
-  const { sedes, selectedSede, setSelectedSede, getSelectedSedeData } = useSede()
+  const { sedes, loading, selectedSede, setSelectedSede, getSelectedSedeData } = useSede()
 
   const currentSede = getSelectedSedeData()
   const isAll = selectedSede === SEDE_ALL_OPTION
-  const displayText = isAll
+  const displayText = loading
+    ? 'Cargando sedes...'
+    : isAll
     ? 'Todas las sedes'
     : currentSede?.nombre || 'Seleccionar sede'
 

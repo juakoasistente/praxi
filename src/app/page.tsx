@@ -107,20 +107,11 @@ export default function LandingPage() {
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link href="/" className="flex items-center gap-2 text-white">
-                <svg width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="nav-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{stopColor:"#4f46e5"}} />
-                      <stop offset="100%" style={{stopColor:"#3b38f7"}} />
-                    </linearGradient>
-                  </defs>
-                  <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#nav-logo-gradient)" />
-                  <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
-                  <circle cx="15" cy="75" r="3" fill="#4f46e5" opacity="0.8" />
-                  <circle cx="35" cy="68" r="2" fill="#4f46e5" opacity="0.6" />
-                  <circle cx="55" cy="75" r="2.5" fill="#4f46e5" opacity="0.7" />
-                  <circle cx="75" cy="68" r="2" fill="#4f46e5" opacity="0.5" />
-                </svg>
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/20 backdrop-blur-sm">
+                  <span className="text-white font-black text-sm leading-none">
+                    <span className="text-sm font-black">P</span><span className="text-xs font-bold">x</span>
+                  </span>
+                </div>
                 <span className="text-xl font-bold tracking-tight">Praxi</span>
               </Link>
             </div>
@@ -982,20 +973,11 @@ export default function LandingPage() {
             {/* Logo and Description */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <linearGradient id="footer-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{stopColor:"#4f46e5"}} />
-                      <stop offset="100%" style={{stopColor:"#3b38f7"}} />
-                    </linearGradient>
-                  </defs>
-                  <path d="M20 15 L20 85 L32 85 L32 55 L60 55 C74 55 82 47 82 35 C82 23 74 15 60 15 L20 15 Z" fill="url(#footer-logo-gradient)" />
-                  <path d="M32 25 L58 25 C68 25 72 29 72 35 C72 41 68 45 58 45 L32 45 Z" fill="white" />
-                  <circle cx="15" cy="75" r="3" fill="#4f46e5" opacity="0.8" />
-                  <circle cx="35" cy="68" r="2" fill="#4f46e5" opacity="0.6" />
-                  <circle cx="55" cy="75" r="2.5" fill="#4f46e5" opacity="0.7" />
-                  <circle cx="75" cy="68" r="2" fill="#4f46e5" opacity="0.5" />
-                </svg>
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600">
+                  <span className="text-white font-black text-sm leading-none">
+                    <span className="text-base font-black">P</span><span className="text-xs font-bold">x</span>
+                  </span>
+                </div>
                 <span className="text-2xl font-bold text-white">Praxi</span>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed max-w-xs">

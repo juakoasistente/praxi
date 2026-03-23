@@ -1,15 +1,17 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { MOCK_SEDES } from '@/components/sedes/mock-data'
+import { getSedes } from '@/lib/services/sedes'
 import { SEDE_ALL_OPTION } from '@/components/sedes/types'
 import type { Sede } from '@/components/sedes/types'
 
 interface SedeContextType {
   sedes: Sede[]
+  loading: boolean
   selectedSede: string // sede id or "todas"
   setSelectedSede: (sedeId: string) => void
   getSelectedSedeData: () => Sede | null
+  refreshSedes: () => Promise<void>
 }
 
 const SedeContext = createContext<SedeContextType | undefined>(undefined)
@@ -21,17 +23,39 @@ interface SedeProviderProps {
 }
 
 export function SedeProvider({ children }: SedeProviderProps) {
+  const [sedes, setSedes] = useState<Sede[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedSede, setSelectedSedeState] = useState<string>(SEDE_ALL_OPTION)
   const [mounted, setMounted] = useState(false)
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && (stored === SEDE_ALL_OPTION || MOCK_SEDES.find(s => s.id === stored))) {
-      setSelectedSedeState(stored)
+  const loadSedes = async () => {
+    try {
+      setLoading(true)
+      const data = await getSedes()
+      setSedes(data)
+    } catch (error) {
+      console.error('Error loading sedes:', error)
+      setSedes([])
+    } finally {
+      setLoading(false)
     }
-    setMounted(true)
+  }
+
+  // Load sedes on mount
+  useEffect(() => {
+    loadSedes()
   }, [])
+
+  // Load selected sede from localStorage after sedes are loaded
+  useEffect(() => {
+    if (!loading && sedes.length > 0) {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored && (stored === SEDE_ALL_OPTION || sedes.find(s => s.id === stored))) {
+        setSelectedSedeState(stored)
+      }
+      setMounted(true)
+    }
+  }, [loading, sedes])
 
   const setSelectedSede = (sedeId: string) => {
     setSelectedSedeState(sedeId)
@@ -42,14 +66,20 @@ export function SedeProvider({ children }: SedeProviderProps) {
 
   const getSelectedSedeData = (): Sede | null => {
     if (selectedSede === SEDE_ALL_OPTION) return null
-    return MOCK_SEDES.find(s => s.id === selectedSede) || null
+    return sedes.find(s => s.id === selectedSede) || null
+  }
+
+  const refreshSedes = async () => {
+    await loadSedes()
   }
 
   const contextValue: SedeContextType = {
-    sedes: MOCK_SEDES,
+    sedes,
+    loading,
     selectedSede,
     setSelectedSede,
     getSelectedSedeData,
+    refreshSedes,
   }
 
   return React.createElement(
